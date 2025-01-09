@@ -23,9 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 
-# py deps
-__pycache__
-venv
-
 # env
 .env
+
+# go
+tmp
+main
