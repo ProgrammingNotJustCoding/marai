@@ -1,35 +1,35 @@
 provider "aws" {
-  region = var.region
+  region = var.aws_region
 }
 
-module "s3" {
+module "s3_athena" {
   source = "./modules/s3"
-  bucket_name = var.s3_bucket_name
-  region = var.region
+  bucket_name = var.athena_bucket_name
 }
 
 module "athena" {
-  source      = "./modules/athena"
-  s3_bucket   = var.s3_bucket_name
-  table_name  = var.table_name
-  database_name = var.database_name
+  source = "./modules/athena"
+  
+  bucket_name = var.athena_bucket_name
 }
 
 module "rds" {
-  source = "./modules/rds"
-  instance_type = var.rds_instance_type
-  db_name = var.rds_db_name
-  username = var.rds_username
-  password = var.rds_password
+  source                 = "./modules/rds"
+  db_name                = var.db_name
+  db_username            = var.db_username
+  db_password            = var.db_password
+  instance_class         = var.instance_class
+  allocated_storage      = var.allocated_storage
+  allowed_cidrs          = var.allowed_cidrs
+  vpc_security_group_ids = var.vpc_security_group_ids
+  db_engine              = var.db_engine
+  db_engine_version      = var.db_engine_version
+  db_identifier          = var.db_identifier
 }
 
 module "cloudfront" {
   source = "./modules/cloudfront"
-  origin_domain = var.cloudfront_origin_domain
-}
-
-module "managed_blockchain" {
-  source = "./modules/managed-blockchain"
-  network_name = var.blockchain_network_name
-  framework = var.blockchain_framework
+  bucket_domain_name = module.s3_athena.bucket_domain_name
+  bucket_arn         = module.s3_athena.bucket_arn
+  origin_domain      = var.origin_domain
 }

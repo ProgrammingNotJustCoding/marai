@@ -1,7 +1,7 @@
-output "database_name" {
-  value = aws_athena_database.example.name
+output "bucket_name" {
+  value = aws_s3_bucket.athena_bucket.bucket
 }
 
-output "table_names" {
-  value = [aws_athena_table.example.name]
+output "bucket_arn" {
+  value = aws_s3_bucket.athena_bucket.arn
 }

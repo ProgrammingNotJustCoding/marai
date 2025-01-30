@@ -1,0 +1,10 @@
+allocated_storage          = 20
+db_engine                  = "postgres"
+db_engine_version          = "0.0"
+instance_class             = "sample"
+db_name                    = "sample"
+db_username                = "sample"
+db_password                = "sample"
+vpc_security_group_ids     = ["sample"]
+allowed_cidrs              = ["0.0.0.0/0"]
+db_identifier              = "sample"
