@@ -29,3 +29,7 @@ dist-ssr
 # go
 tmp
 main
+
+# terraform
+.terraform
+.terraform.lock.hcl
