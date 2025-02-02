@@ -33,3 +33,7 @@ main
 # terraform
 .terraform
 .terraform.lock.hcl
+
+# python
+venv/
+__pycache__/

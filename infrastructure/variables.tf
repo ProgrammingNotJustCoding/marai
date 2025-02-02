@@ -4,8 +4,8 @@ variable "aws_region" {
   default     = "us-west-2"
 }
 
-variable "athena_bucket_name" {
-  description = "Name of the S3 bucket for Athena"
+variable "bucket_name" {
+  description = "Name of the S3 bucket"
   type        = string
 }
 
