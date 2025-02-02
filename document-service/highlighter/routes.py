@@ -1,3 +1,5 @@
+import os
+import tempfile
 from datetime import datetime
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from .content import extract_text_from_pdf, extract_text_from_docx
@@ -18,24 +20,29 @@ def health():
 
 @router.post("/extract")
 async def extract_text(file: UploadFile = File(...)):
-    if file.content_type == "application/pdf":
-        with open(file.filename, "wb") as f:
-            f.write(await file.read())
-        text = extract_text_from_pdf(file.filename)
-    elif file.content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        with open(file.filename, "wb") as f:
-            f.write(await file.read())
-        text = extract_text_from_docx(file.filename)
-    else:
-        raise HTTPException(status_code=400, detail="Unsupported file type")
-    
-    elaboration = elaborate_on(text)
-    
-    return {
-        "status": 200,
-        "message": "OK",
-        "prettyMessage": "Text extracted successfully",
-        "data": {
-            "elaboration": elaboration
+    try:
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp.write(await file.read())
+            tmp.flush()
+            tmp_path = tmp.name
+
+        if file.content_type == "application/pdf":
+            text = extract_text_from_pdf(tmp_path)
+        elif file.content_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+            text = extract_text_from_docx(tmp_path)
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported file type")
+        
+        elaboration = elaborate_on(text)
+        
+        return {
+            "status": 200,
+            "message": "OK",
+            "prettyMessage": "Text extracted successfully",
+            "data": {
+                "elaboration": elaboration
+            }
         }
-    }
+    finally:
+        if os.path.exists(tmp_path):
+            os.remove(tmp_path)
