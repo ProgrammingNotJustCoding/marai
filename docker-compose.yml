@@ -1,11 +1,27 @@
 services:
-  postgres:
+  marai_backend:
+    build:
+      context: ./backend
+      target: final
+    ports:
+      - 8080:8080
+    expose:
+      - 8080
+    networks:
+      - marai-network
+    depends_on:
+      marai_postgres:
+        condition: service_healthy
+
+  marai_postgres:
     container_name: marai-postgres
-    image: postgres:latest
+    image: postgres:13
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: marai
+    networks:
+      - marai-network
     ports:
       - "5432:5432"
     volumes:
@@ -18,3 +34,7 @@ services:
 
 volumes:
   postgres_data:
+
+networks:
+  marai-network:
+    driver: bridge

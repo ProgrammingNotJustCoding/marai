@@ -1,40 +1,64 @@
 package config
 
 import (
+	"fmt"
 	"log"
+	"os"
 
-	"github.com/spf13/viper"
+	"github.com/joho/godotenv"
 )
 
-type Env struct {
-	Port  string `mapstructure:"PORT"`
-	DBUrl string `mapstructure:"DB_URL"`
+var env = map[string]interface{}{
+	"PORT":                    "8080",
+	"DEBUG":                   "true",
+	"ENV":                     "development",
+	"CLIENT_URL":              "http://localhost:3000",
+	"DATABASE_URL":            nil,
+	"GORILLA_SESSIONS_MAXAGE": "604800",
+	"GORILLA_SESSIONS_KEY":    "NotSoSecretKey-ChangeMe-Please",
 }
 
-func LoadEnv() *Env {
-	env := Env{}
+func GetEnv(key string, fallback ...string) string {
+	value, exists := os.LookupEnv(key)
 
-	viper.SetConfigName(".env")
-	viper.SetConfigType("env")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
+	if !exists {
+		if len(fallback) > 0 {
+			return fallback[0]
+		}
 
-	viper.SetDefault("PORT", "8000")
+		if env[key] != nil {
+			return fmt.Sprintf("%v", env[key])
+		}
 
-	err := viper.ReadInConfig()
+		log.Panicf("Environment variable %s not set", key)
+	}
+
+	return value
+}
+
+func GetServerAddress() string {
+	port := GetEnv("PORT", "8080")
+	env := GetEnv("ENV", "development")
+
+	switch env {
+	case "production", "prod", "staging", "docker":
+		return fmt.Sprintf(":%s", port)
+	default:
+		return fmt.Sprintf("localhost:%s", port)
+	}
+}
+
+func LoadEnv() {
+	err := godotenv.Load(".env")
 	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Println("No .env file found, using defaults and environment variables")
+		log.Fatal("Error loading .env file", err)
+	}
+
+	for key, value := range env {
+		if value, ok := value.(string); ok {
+			GetEnv(key, value)
 		} else {
-			log.Fatalf("Error reading .env file: %s\n", err)
+			GetEnv(key)
 		}
 	}
-
-	err = viper.Unmarshal(&env)
-	if err != nil {
-		log.Fatalf("Unable to decode into struct, %v", err)
-	}
-
-	log.Printf("Environment variables loaded successfully!")
-	return &env
 }

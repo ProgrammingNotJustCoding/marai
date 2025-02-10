@@ -9,15 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepository struct {
+type UserRepo struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) *UserRepository {
-	return &UserRepository{db: db}
+func NewUserRepository(db *gorm.DB) *UserRepo {
+	return &UserRepo{db: db}
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, user *schema.User) error {
+func (r *UserRepo) CreateUser(ctx context.Context, user *schema.User) error {
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
@@ -29,7 +29,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *schema.User) erro
 	return nil
 }
 
-func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*schema.User, error) {
+func (r *UserRepo) GetUserByID(ctx context.Context, id int) (*schema.User, error) {
 	var user schema.User
 	result := r.db.WithContext(ctx).Where("id = ? AND is_deleted = ?", id, false).First(&user)
 
@@ -43,7 +43,7 @@ func (r *UserRepository) GetUserByID(ctx context.Context, id int) (*schema.User,
 	return &user, nil
 }
 
-func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*schema.User, error) {
+func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*schema.User, error) {
 	var user schema.User
 	result := r.db.WithContext(ctx).Where("email = ? AND is_deleted = ?", email, false).First(&user)
 
@@ -57,7 +57,7 @@ func (r *UserRepository) GetUserByEmail(ctx context.Context, email string) (*sch
 	return &user, nil
 }
 
-func (r *UserRepository) GetUsers(ctx context.Context, page, pageSize int) ([]schema.User, int64, error) {
+func (r *UserRepo) GetUsers(ctx context.Context, page, pageSize int) ([]schema.User, int64, error) {
 	var users []schema.User
 	var total int64
 
@@ -81,7 +81,7 @@ func (r *UserRepository) GetUsers(ctx context.Context, page, pageSize int) ([]sc
 	return users, total, nil
 }
 
-func (r *UserRepository) UpdateUser(ctx context.Context, user *schema.User) error {
+func (r *UserRepo) UpdateUser(ctx context.Context, user *schema.User) error {
 	user.UpdatedAt = time.Now()
 
 	result := r.db.WithContext(ctx).Model(user).
@@ -103,7 +103,7 @@ func (r *UserRepository) UpdateUser(ctx context.Context, user *schema.User) erro
 	return nil
 }
 
-func (r *UserRepository) DeleteUser(ctx context.Context, id int) error {
+func (r *UserRepo) DeleteUser(ctx context.Context, id int) error {
 	now := time.Now()
 	result := r.db.WithContext(ctx).Model(&schema.User{}).
 		Where("id = ? AND is_deleted = ?", id, false).
@@ -124,7 +124,7 @@ func (r *UserRepository) DeleteUser(ctx context.Context, id int) error {
 	return nil
 }
 
-func (r *UserRepository) HardDeleteUser(ctx context.Context, id int) error {
+func (r *UserRepo) HardDeleteUser(ctx context.Context, id int) error {
 	result := r.db.WithContext(ctx).Unscoped().Delete(&schema.User{}, id)
 
 	if result.Error != nil {

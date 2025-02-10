@@ -1,34 +1,52 @@
 package app
 
 import (
+	"context"
 	"log"
 	"marai/api/middlewares"
 	"marai/api/routes"
+	"marai/internal/config"
 	"marai/internal/database"
+	"net/http"
+	"time"
 
-	"github.com/labstack/echo/v4"
+	_ "net/http/pprof"
+
 	"go.uber.org/fx"
-	"gorm.io/gorm"
 )
 
-var Module = fx.Options(
-	fx.Provide(
-		NewEcho,
-		NewEnv,
-		NewDB,
-	),
-	fx.Invoke(
-		Setup,
-		StartServer,
-	),
-)
+func (a *App) Start(ctx context.Context) error {
+	a.StartTime = time.Now()
+	address := config.GetServerAddress()
+	go func() {
+		if err := a.Echo.Start(address); err != nil {
+			log.Printf("Error starting server: %v", err)
+		}
+	}()
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
+	return nil
+}
 
-func Setup(e *echo.Echo, db *gorm.DB) {
-	if err := database.RunMigrations(db); err != nil {
+func (a *App) Stop(ctx context.Context) error {
+	return a.Echo.Shutdown(ctx)
+}
+
+func RegisterHooks(lc fx.Lifecycle, app *App) {
+	lc.Append(fx.Hook{
+		OnStart: app.Start,
+		OnStop:  app.Stop,
+	})
+}
+
+func Setup(app *App) {
+	if err := database.RunMigrations(app.DB); err != nil {
 		log.Fatalf("Error running migrations: %v", err)
 		return
 	}
-	middlewares.SetupMiddlewares(e)
-	api := e.Group("/api")
+
+	middlewares.SetupMiddlewares(app.Echo)
+	api := app.Echo.Group("/api")
 	routes.SetupRoutes(api)
 }

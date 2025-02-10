@@ -7,7 +7,6 @@ import (
 )
 
 func SetupRoutes(router *echo.Group) {
-
 	startTime := time.Now()
 
 	router.GET("/health", func(c echo.Context) error {

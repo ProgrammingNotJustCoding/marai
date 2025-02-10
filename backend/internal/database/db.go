@@ -11,8 +11,7 @@ import (
 )
 
 func NewDB() (*gorm.DB, error) {
-	env := config.LoadEnv()
-	dbUrl := env.DBUrl
+	dbUrl := config.GetEnv("DATABASE_URL")
 
 	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
 	if err != nil {
@@ -27,11 +26,8 @@ func NewDB() (*gorm.DB, error) {
 	}
 
 	sqlDB.SetMaxIdleConns(10)
-
 	sqlDB.SetMaxOpenConns(100)
-
 	sqlDB.SetConnMaxLifetime(time.Hour)
-
 	sqlDB.SetConnMaxIdleTime(10 * time.Minute)
 
 	return db, nil
