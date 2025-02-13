@@ -1,0 +1,18 @@
+meta {
+  name: signin pwd
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://localhost:8080/api/auth/user/signin/password
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "mobile": "+919840121224",
+    "password": "helloworld"
+  }
+}

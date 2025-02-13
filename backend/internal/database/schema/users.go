@@ -1,15 +1,22 @@
 package schema
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
-	ID           int        `json:"id" gorm:"primaryKey"`
-	Username     string     `json:"username"`
-	PasswordHash string     `json:"password_hash"`
-	Email        string     `json:"email" gorm:"unique"`
-	Mobile       string     `json:"mobile" gorm:"unique"`
-	CreatedAt    time.Time  `json:"created_at"`
-	UpdatedAt    time.Time  `json:"updated_at"`
-	DeletedAt    *time.Time `json:"deleted_at"`
-	IsDeleted    bool       `json:"is_deleted"`
+	ID               string     `json:"id" gorm:"primaryKey;type:varchar(26)"`
+	Username         string     `json:"username"`
+	PasswordHash     string     `json:"passwordHash,omitempty"`
+	Email            string     `json:"email" gorm:"unique"`
+	IsEmailVerified  bool       `json:"isEmailVerified" gorm:"default:false"`
+	Mobile           string     `json:"mobile" gorm:"unique"`
+	IsMobileVerified bool       `json:"isMobileVerified" gorm:"default:false"`
+	LastLoginAt      *time.Time `json:"lastLogin_at"`
+	CreatedAt        time.Time  `json:"createdAt"`
+	UpdatedAt        time.Time  `json:"updatedAt"`
+	DeletedAt        *time.Time `json:"deletedAt"`
+	IsDeleted        bool       `json:"is_deleted" gorm:"default:false"`
+
+	Session []Session `gorm:"foreignKey:UserID;references:ID"`
 }

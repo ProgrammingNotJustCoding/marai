@@ -16,22 +16,25 @@ type App struct {
 	Echo           *echo.Echo
 	DB             *gorm.DB
 	UserRepo       *repositories.UserRepo
-	UserController *controllers.UserController
+	SessionRepo    *repositories.SessionRepo
+	AuthController *controllers.AuthController
 	StartTime      time.Time
 }
 
 func NewApp(
 	db *gorm.DB,
-	userRepo *repositories.UserRepo,
-	userController *controllers.UserController,
+	UserRepo *repositories.UserRepo,
+	SessionRepo *repositories.SessionRepo,
+	AuthController *controllers.AuthController,
 ) *App {
 	e := echo.New()
 
 	return &App{
 		Echo:           e,
 		DB:             db,
-		UserRepo:       userRepo,
-		UserController: userController,
+		UserRepo:       UserRepo,
+		SessionRepo:    SessionRepo,
+		AuthController: AuthController,
 	}
 }
 
@@ -43,8 +46,9 @@ func NewFxApp() *fx.App {
 			fx.Provide(
 				NewEcho,
 				NewDB,
+				repositories.NewSessionRepository,
 				repositories.NewUserRepository,
-				controllers.NewUserController,
+				controllers.NewAuthController,
 				NewApp,
 			),
 			fx.Invoke(
