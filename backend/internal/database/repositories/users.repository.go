@@ -19,7 +19,7 @@ func NewUserRepository(db *gorm.DB) *UserRepo {
 }
 
 func (r *UserRepo) CreateUser(ctx context.Context, user *schema.User) error {
-	user.ID = ulid.Make()
+	user.ID = ulid.Make().String()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 

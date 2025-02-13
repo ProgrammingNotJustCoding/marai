@@ -208,15 +208,15 @@ func (a *AuthController) HandleSigninOTPVerify(c echo.Context) error {
 
 	c.SetCookie(&http.Cookie{
 		Name:     "sessionID",
-		Value:    session.ID.String(),
+		Value:    session.ID,
 		Expires:  session.ExpiresAt,
 		HttpOnly: true,
 		Path:     "/",
 	})
 
 	return c.JSON(http.StatusOK, AuthResponse{
-		Token: session,
-		User:  user,
+		SessionID: session.ID,
+		User:      user,
 	})
 }
 
@@ -276,14 +276,14 @@ func (a *AuthController) HandleSigninPassword(c echo.Context) error {
 
 	c.SetCookie(&http.Cookie{
 		Name:     "sessionID",
-		Value:    session.ID.String(),
+		Value:    session.ID,
 		Expires:  session.ExpiresAt,
 		HttpOnly: true,
 		Path:     "/",
 	})
 
 	return c.JSON(http.StatusOK, AuthResponse{
-		Token: session,
-		User:  user,
+		SessionID: session.ID,
+		User:      user,
 	})
 }

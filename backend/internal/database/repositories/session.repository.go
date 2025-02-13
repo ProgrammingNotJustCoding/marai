@@ -24,9 +24,9 @@ func NewSessionRepository(db *gorm.DB) *SessionRepo {
 	}
 }
 
-func (r *SessionRepo) CreateSession(ctx context.Context, userID ulid.ULID) (*schema.Session, error) {
+func (r *SessionRepo) CreateSession(ctx context.Context, userID string) (*schema.Session, error) {
 	session := &schema.Session{
-		ID:        ulid.Make(),
+		ID:        ulid.Make().String(),
 		UserID:    userID,
 		ExpiresAt: time.Now().Add(24 * 7 * time.Hour),
 		CreatedAt: time.Now(),
@@ -38,7 +38,7 @@ func (r *SessionRepo) CreateSession(ctx context.Context, userID ulid.ULID) (*sch
 	}
 
 	r.cacheMutex.Lock()
-	r.sessionCache[session.ID.String()] = session
+	r.sessionCache[session.ID] = session
 	r.cacheMutex.Unlock()
 
 	return session, nil

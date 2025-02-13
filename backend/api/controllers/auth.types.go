@@ -1,7 +1,5 @@
 package controllers
 
-import "marai/internal/database/schema"
-
 type SignupRequest struct {
 	Username string `json:"username" validate:"required"`
 	Email    string `json:"email" validate:"required,email"`
@@ -24,6 +22,6 @@ type SigninPasswordRequest struct {
 }
 
 type AuthResponse struct {
-	Token *schema.Session `json:"token,omitempty"`
-	User  interface{}     `json:"user,omitempty"`
+	SessionID string      `json:"sessionID,omitempty"`
+	User      interface{} `json:"user,omitempty"`
 }

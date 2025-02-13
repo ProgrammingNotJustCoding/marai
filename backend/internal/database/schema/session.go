@@ -3,15 +3,15 @@ package schema
 import (
 	"time"
 
-	"github.com/oklog/ulid/v2"
+	"gorm.io/gorm"
 )
 
 type Session struct {
-	ID        ulid.ULID `json:"id" gorm:"primaryKey;type:varchar(26)"`
-	UserID    ulid.ULID `json:"user_id" gorm:"type:varchar(26)"`
-	User      User      `json:"user" gorm:"foreignKey:UserID"`
-	ExpiresAt time.Time `json:"expires_at"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	gorm.Model
+	ID        string    `json:"id" gorm:"primaryKey;type:varchar(26)"`
+	UserID    string    `json:"userId" gorm:"type:varchar(26)"`
+	ExpiresAt time.Time `json:"expiresAt"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 	IsRevoked bool      `json:"is_revoked" gorm:"default:false"`
 }

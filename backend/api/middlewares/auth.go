@@ -21,7 +21,6 @@ func AuthMiddleware(sessionRepo *repositories.SessionRepo) echo.MiddlewareFunc {
 				return c.JSON(http.StatusUnauthorized, constants.ErrUnauthorized)
 			}
 
-			c.Set("user", session.User)
 			c.Set("session", session)
 			return next(c)
 		}
