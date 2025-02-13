@@ -58,7 +58,6 @@ func (a *AuthController) verifyOtp(c echo.Context, mobileNo string, otp string) 
 	params.SetCode(otp)
 
 	resp, err := client.VerifyV2.CreateVerificationCheck(a.twilioSID, params)
-
 	if err != nil {
 		c.Logger().Error(err)
 		return false, err
@@ -171,7 +170,6 @@ func (a *AuthController) HandleSigninOTP(c echo.Context) error {
 			"mobile": req.Mobile,
 		},
 	})
-
 }
 
 func (a *AuthController) HandleSigninOTPVerify(c echo.Context) error {

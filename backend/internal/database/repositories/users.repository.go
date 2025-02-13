@@ -25,6 +25,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, user *schema.User) error {
 
 	return r.db.WithContext(ctx).Create(user).Error
 }
+
 func (r *UserRepo) GetUserByID(ctx context.Context, id int) (*schema.User, error) {
 	var user schema.User
 	result := r.db.WithContext(ctx).Where("id = ? AND is_deleted = ?", id, false).First(&user)
