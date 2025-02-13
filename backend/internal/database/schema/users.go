@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	ID               ulid.ULID  `json:"id" gorm:"primaryKey;type:char(26)"`
+	ID               ulid.ULID  `json:"id" gorm:"primaryKey;type:varchar(26)"`
 	Username         string     `json:"username"`
 	PasswordHash     string     `json:"password_hash,omitempty"`
 	Email            string     `json:"email" gorm:"unique"`
@@ -15,8 +15,6 @@ type User struct {
 	Mobile           string     `json:"mobile" gorm:"unique"`
 	IsMobileVerified bool       `json:"is_mobile_verified" gorm:"default:false"`
 	LastLoginAt      *time.Time `json:"last_login_at"`
-	LastOTPAt        *time.Time `json:"last_otp_at"`
-	OTPAttempts      int        `json:"otp_attempts" gorm:"default:0"`
 	CreatedAt        time.Time  `json:"created_at"`
 	UpdatedAt        time.Time  `json:"updated_at"`
 	DeletedAt        *time.Time `json:"deleted_at"`
