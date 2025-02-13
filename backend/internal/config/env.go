@@ -9,13 +9,16 @@ import (
 )
 
 var env = map[string]interface{}{
-	"PORT":                    "8080",
-	"DEBUG":                   "true",
-	"ENV":                     "development",
-	"CLIENT_URL":              "http://localhost:3000",
-	"DATABASE_URL":            nil,
-	"GORILLA_SESSIONS_MAXAGE": "604800",
-	"GORILLA_SESSIONS_KEY":    "NotSoSecretKey-ChangeMe-Please",
+	"PORT":                     "8080",
+	"DEBUG":                    "true",
+	"ENV":                      "development",
+	"CLIENT_URL":               "http://localhost:3000",
+	"DATABASE_URL":             nil,
+	"GORILLA_SESSIONS_MAXAGE":  "604800",
+	"GORILLA_SESSIONS_KEY":     "NotSoSecretKey-ChangeMe-Please",
+	"TWILIO_ACCOUNT_SID":       nil,
+	"TWILIO_AUTH_TOKEN":        nil,
+	"TWILIO_VERIFY_SERVICE_ID": nil,
 }
 
 func GetEnv(key string, fallback ...string) string {

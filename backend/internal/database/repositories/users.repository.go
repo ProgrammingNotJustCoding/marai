@@ -6,6 +6,7 @@ import (
 	"marai/internal/database/schema"
 	"time"
 
+	"github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
 
@@ -18,17 +19,12 @@ func NewUserRepository(db *gorm.DB) *UserRepo {
 }
 
 func (r *UserRepo) CreateUser(ctx context.Context, user *schema.User) error {
+	user.ID = ulid.Make()
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
 
-	result := r.db.WithContext(ctx).Create(user)
-	if result.Error != nil {
-		return result.Error
-	}
-
-	return nil
+	return r.db.WithContext(ctx).Create(user).Error
 }
-
 func (r *UserRepo) GetUserByID(ctx context.Context, id int) (*schema.User, error) {
 	var user schema.User
 	result := r.db.WithContext(ctx).Where("id = ? AND is_deleted = ?", id, false).First(&user)
@@ -46,6 +42,20 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int) (*schema.User, error
 func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*schema.User, error) {
 	var user schema.User
 	result := r.db.WithContext(ctx).Where("email = ? AND is_deleted = ?", email, false).First(&user)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepo) GetUserByMobile(ctx context.Context, mobile string) (*schema.User, error) {
+	var user schema.User
+	result := r.db.WithContext(ctx).Where("mobile = ? AND is_deleted = ?", mobile, false).First(&user)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {

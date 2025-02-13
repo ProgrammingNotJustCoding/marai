@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"log"
+	"marai/api/controllers"
 	"marai/api/middlewares"
 	"marai/api/routes"
 	"marai/internal/config"
@@ -40,7 +41,7 @@ func RegisterHooks(lc fx.Lifecycle, app *App) {
 	})
 }
 
-func Setup(app *App) {
+func Setup(app *App, AuthController *controllers.AuthController) {
 	if err := database.RunMigrations(app.DB); err != nil {
 		log.Fatalf("Error running migrations: %v", err)
 		return
@@ -48,5 +49,5 @@ func Setup(app *App) {
 
 	middlewares.SetupMiddlewares(app.Echo)
 	api := app.Echo.Group("/api")
-	routes.SetupRoutes(api)
+	routes.SetupRoutes(api, AuthController)
 }

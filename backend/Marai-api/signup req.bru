@@ -1,0 +1,20 @@
+meta {
+  name: signup req
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8080/api/auth/user/signup
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "harshpatel",
+    "email": "hp8823@srmist.edu.in",
+    "mobile": "+919840121224",
+    "password": "helloworld"
+  }
+}

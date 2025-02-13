@@ -36,5 +36,6 @@ func NewDB() (*gorm.DB, error) {
 func RunMigrations(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&schema.User{},
+		&schema.Session{},
 	)
 }
