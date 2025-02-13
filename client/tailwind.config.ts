@@ -9,8 +9,26 @@ export default {
     './src/**/*.js',
   ],
   theme: {
-    extend: {},
+    extend: {
+      animation: {
+        'gradient-xy': 'gradient-xy 15s ease infinite',
+      },
+      keyframes: {
+        'gradient-xy': {
+          '0%, 100%': {
+            'background-size': '400% 400%',
+            'background-position': '0% 50%'
+          },
+          '50%': {
+            'background-size': '400% 400%',
+            'background-position': '100% 50%'
+          },
+        },
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
+    },
   },
   plugins: [],
 }
-

@@ -1,19 +1,9 @@
-import React from "react";
-import Hero from "../components/home/Hero";
-import Footer from "../components/common/Footer";
+import HomePage from "../components/home/Homepage"
 
-const Home: React.FC = () => {
-
-  React.useEffect(() => {
-    document.title = "Marai"
-  }, [])
-
+const Home = () => {
   return (
-      <main className="w-screen h-screen flex flex-col">
-        <Hero />
-        <Footer />
-      </main>
-  );
-};
+    <HomePage />
+  )
+}
 
 export default Home;
