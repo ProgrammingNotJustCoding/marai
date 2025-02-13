@@ -23,7 +23,7 @@ type App struct {
 
 func NewApp(
 	db *gorm.DB,
-	userRepo *repositories.UserRepo,
+	UserRepo *repositories.UserRepo,
 	SessionRepo *repositories.SessionRepo,
 	AuthController *controllers.AuthController,
 ) *App {
@@ -32,7 +32,7 @@ func NewApp(
 	return &App{
 		Echo:           e,
 		DB:             db,
-		UserRepo:       userRepo,
+		UserRepo:       UserRepo,
 		SessionRepo:    SessionRepo,
 		AuthController: AuthController,
 	}
