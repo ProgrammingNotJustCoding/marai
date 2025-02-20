@@ -1,0 +1,24 @@
+meta {
+  name: Create Lawfirm
+  type: http
+  seq: 6
+}
+
+post {
+  url: http://localhost:8080/api/lawfirms
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "name":"rishi",
+    "address":"chennai, India",
+    "phone": "9840121224",
+    "email": "risv1@srmist.edu.in"
+  }
+}

@@ -55,10 +55,7 @@ func (r *SessionRepo) GetSessionByToken(ctx context.Context, token string) (*sch
 	r.cacheMutex.RUnlock()
 
 	var session schema.Session
-	if err := r.db.WithContext(ctx).
-		Preload("User").
-		Where("token = ? AND is_revoked = ? AND expires_at > ?", token, false, time.Now()).
-		First(&session).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&session, "id = ?", token).Error; err != nil {
 		return nil, err
 	}
 
@@ -72,7 +69,7 @@ func (r *SessionRepo) GetSessionByToken(ctx context.Context, token string) (*sch
 func (r *SessionRepo) RevokeSession(ctx context.Context, token string) error {
 	err := r.db.WithContext(ctx).
 		Model(&schema.Session{}).
-		Where("token = ?", token).
+		Where("id = ?", token).
 		Update("is_revoked", true).Error
 
 	if err == nil {

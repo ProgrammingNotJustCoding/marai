@@ -1,0 +1,15 @@
+meta {
+  name: Get All Lawfirms
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://localhost:8080/api/lawfirms
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}

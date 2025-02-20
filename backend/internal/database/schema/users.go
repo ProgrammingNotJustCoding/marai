@@ -12,11 +12,13 @@ type User struct {
 	IsEmailVerified  bool       `json:"isEmailVerified" gorm:"default:false"`
 	Mobile           string     `json:"mobile" gorm:"unique"`
 	IsMobileVerified bool       `json:"isMobileVerified" gorm:"default:false"`
-	LastLoginAt      *time.Time `json:"lastLogin_at"`
-	CreatedAt        time.Time  `json:"createdAt"`
-	UpdatedAt        time.Time  `json:"updatedAt"`
-	DeletedAt        *time.Time `json:"deletedAt"`
-	IsDeleted        bool       `json:"is_deleted" gorm:"default:false"`
+	LastLoginAt      *time.Time `json:"lastLoginAt"`
 
-	Session []Session `gorm:"foreignKey:UserID;references:ID"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt time.Time  `json:"updatedAt"`
+	DeletedAt *time.Time `json:"deletedAt"`
+	IsDeleted bool       `json:"isDeleted" gorm:"default:false"`
+
+	LawFirmMemberships []LawFirmMembership `gorm:"foreignKey:UserID"`
+	OwnedLawFirms      []LawFirm           `gorm:"foreignKey:OwnerID"`
 }
