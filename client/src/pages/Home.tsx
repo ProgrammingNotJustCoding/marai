@@ -1,16 +1,17 @@
 import HomePage from "../components/home/Home";
-import Footer from "../components/common/Footer"
+import Footer from "../components/common/Footer";
 import Layout from "../components/common/Layout";
 
 const Home = () => {
-
   return (
-      <main className="w-screen h-screen flex flex-col">
-       <Layout>
-        <HomePage />
-        <Footer />
-       </Layout>
+    <div className="min-h-screen w-full overflow-x:hidden bg-black">
+      <main className="w-full h-full flex flex-col bg-black">
+        <Layout>
+          <HomePage />
+          <Footer />
+        </Layout>
       </main>
+    </div>
   );
 };
 
