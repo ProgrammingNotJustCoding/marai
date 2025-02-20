@@ -13,5 +13,5 @@ type Session struct {
 	ExpiresAt time.Time `json:"expiresAt"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
-	IsRevoked bool      `json:"is_revoked" gorm:"default:false"`
+	IsRevoked bool      `json:"isRevoked" gorm:"default:false"`
 }

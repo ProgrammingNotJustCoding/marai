@@ -2,13 +2,17 @@ package routes
 
 import (
 	"marai/api/controllers"
+	"marai/api/middlewares"
 	"time"
 
 	"github.com/labstack/echo/v4"
 )
 
 func SetupRoutes(router *echo.Group,
+	mw *middlewares.Middlewares,
 	aC *controllers.AuthController,
+	lC *controllers.LawFirmController,
+	mC *controllers.LawfirmMembershipController,
 ) {
 	startTime := time.Now()
 
@@ -30,6 +34,26 @@ func SetupRoutes(router *echo.Group,
 	authRouter.POST("/user/signin/otp/verify", aC.HandleSigninOTPVerify)
 	authRouter.POST("/user/signin/otp/resend", aC.HandleSigninOTPResend)
 	authRouter.POST("/user/signin/password", aC.HandleSigninPassword)
+
+	lawFirmRouter := router.Group("/lawfirms")
+	lawFirmRouter.Use(mw.AuthMiddleware())
+
+	lawFirmRouter.POST("", lC.CreateLawFirm)
+	lawFirmRouter.GET("", lC.GetAllLawFirms)
+	lawFirmRouter.GET("/me", lC.ListLawFirms)
+	lawFirmRouter.GET("/:id", lC.GetLawFirm)
+	lawFirmRouter.PUT("/:id", lC.UpdateLawFirm)
+	lawFirmRouter.DELETE("/:id", lC.DeleteLawFirm)
+
+	lawFirmRouter.POST("/:id/roles", lC.CreateRole)
+	lawFirmRouter.GET("/:id/roles", lC.ListRoles)
+	lawFirmRouter.PUT("/:id/roles/:roleId", lC.UpdateRole)
+	lawFirmRouter.DELETE("/:id/roles/:roleId", lC.DeleteRole)
+
+	lawFirmRouter.POST("/:id/members", mC.AddMember)
+	lawFirmRouter.GET("/:id/members", mC.ListMembers)
+	lawFirmRouter.PUT("/:id/members/:memberId", mC.UpdateMember)
+	lawFirmRouter.DELETE("/:id/members/:memberId", mC.RemoveMember)
 
 	router.Any("/*", func(c echo.Context) error {
 		return c.JSON(404, map[string]any{
