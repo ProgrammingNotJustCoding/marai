@@ -6,10 +6,9 @@ const Home = () => {
   return (
     <div className="min-h-screen w-full overflow-x:hidden bg-black">
       <main className="w-full h-full flex flex-col bg-black">
-        <Layout>
-          <HomePage />
-          <Footer />
-        </Layout>
+        <Layout />
+        <HomePage />
+        <Footer />
       </main>
     </div>
   );

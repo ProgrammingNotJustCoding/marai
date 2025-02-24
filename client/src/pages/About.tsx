@@ -4,9 +4,8 @@ import Layout from "../components/common/Layout";
 const About = () => {
   return (
     <div>
-      <Layout>
-        <AboutPage />
-      </Layout>
+      <Layout />
+      <AboutPage />
     </div>
   );
 };

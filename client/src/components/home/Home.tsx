@@ -94,18 +94,18 @@ const HomePage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen w-full bg-black">
+    <div className="min-h-screen w-full overflow-x:hidden">
       {!isLoaded && (
-        <div className="fixed inset-0 flex items-center justify-center bg-white z-50">
+        <div className="fixed inset-0 flex items-center justify-center  z-50">
           <div className="w-16 h-16 border-4 border-gray-300 border-t-black rounded-full animate-spin"></div>
         </div>
       )}
 
-      <Section className="py-20 bg-black text-white">
+      <Section className="py-20 bg-neutral-950 text-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-10 md:mb-0">
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-100 mb-6 h-32">
+              <h1 className="text-4xl md:text-5xl font-bold text-secondary mb-6 h-32">
                 {heroTitle}
                 <span className="animate-pulse">|</span>
               </h1>
@@ -132,7 +132,7 @@ const HomePage = () => {
         </div>
       </Section>
 
-      <Section className="py-16 bg-black" id="how-it-works">
+      <Section className="py-16 bg-neutral-950" id="how-it-works">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <h2 className="text-3xl font-bold text-center text-gray-100 mb-16">
@@ -201,7 +201,7 @@ const HomePage = () => {
         </div>
       </Section>
 
-      <Section className="py-16 bg-black" id="success-stories">
+      <Section className="py-16 bg-neutral-950" id="success-stories">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <h2 className="text-3xl font-bold text-center text-gray-50 mb-16">
@@ -255,7 +255,7 @@ const HomePage = () => {
         </div>
       </Section>
 
-      <Section className="py-16 bg-black" id="practice-areas">
+      <Section className="py-16 bg-neutral-950" id="practice-areas">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <h2 className="text-3xl font-bold text-center text-gray-100 mb-4">
@@ -290,7 +290,7 @@ const HomePage = () => {
         </div>
       </Section>
 
-      <Section className="py-20 bg-black text-white" id="cta">
+      <Section className="py-20 bg-neutral-950 text-white" id="cta">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <FadeIn>
             <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-100">
@@ -312,7 +312,7 @@ const HomePage = () => {
         </div>
       </Section>
 
-      <Section className="py-16 bg-black" id="stats">
+      <Section className="py-16 bg-neutral-950" id="stats">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             {[
