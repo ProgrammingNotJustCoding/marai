@@ -3,17 +3,26 @@
 Marai
 </h1>
 
-![AWS](https://img.shields.io/badge/AWS-Cloud-orange) ![Azure](https://img.shields.io/badge/Azure-Cloud-blue) ![React](https://img.shields.io/badge/React-Frontend-blue) ![Golang](https://img.shields.io/badge/Golang-Backend-lightblue) ![FastAPI](https://img.shields.io/badge/FastAPI-Microservice-green)
+![AWS](https://img.shields.io/badge/AWS-Cloud-darkblue) ![Azure](https://img.shields.io/badge/Azure-Cloud-darkblue) ![React](https://img.shields.io/badge/React-Frontend-green) ![Golang](https://img.shields.io/badge/Golang-Backend-blue) ![OpenAI](https://img.shields.io/badge/OpenAI-Swarm-orange)
 </div>
 
 ## Overview
 Marai is a cloud-based architecture designed to streamline legal consultations and case file management for clients and law firms. It enables seamless communication between clients and legal consultants, allowing clients to request legal guidance, submit case files for review, and receive AI-powered insights. The system ensures secure storage, efficient case file compression, and retrieval through a distributed and scalable infrastructure leveraging AWS and Azure services.
 
-> [!TIP]
-> We are using a multi-cloud based architecture, with AWS Services on the API server side, and Azure for the agents server.
+> [!CAUTION]
+> We are currently developing the Marai platform.
+
+## Applications:
+- Workflow Management for law firms.
+- Contract Lifecycle Management for law firms.
+- Integrates AI-driven analysis for legal case management.
+- Marketplace for legal services and resources.
 
 ## Architecture Components
 The system consists of multiple AWS and Azure services interacting to form a robust and efficient workflow:
+
+> [!TIP]
+> We are using a multi-cloud based architecture, with AWS Services on the API server side, and Azure for the agents server.
 
 - **Client (EC2, React) 🖥️**
   - A front-end application running on AWS EC2, built with React.
@@ -75,12 +84,6 @@ The system consists of multiple AWS and Azure services interacting to form a rob
 - The Swarm Server interacts with AI models on Azure OpenAI and performs document retrieval using AWS OpenSearch (RAG).
 - The system responds to the client with processed data or insights.
 
-## Use Case: Decentralized Legal Workflow Management
-- Automates legal workflows across multiple jurisdictions.
-- Ensures secure storage and retrieval of legal documents.
-- Integrates AI-driven analysis for legal case management.
-- Optimizes workflow processing using a distributed architecture.
-
 ## Deployment
 1. Provision AWS EC2 instances for the client, backend servers, and swarm server.
 2. Set up AWS ALB and WAF for secure traffic management.
@@ -94,23 +97,11 @@ The system consists of multiple AWS and Azure services interacting to form a rob
 - Enhance AI models for better legal text processing.
 - Expand OpenSearch capabilities for advanced legal search queries.
 
-
-
 ## Shout outs 💥
 
 | <p align="center">![Rishi Viswanathan](https://github.com/risv1.png?size=128)<br>[Rishi Viswanathan](https://github.com/risv1)</p> | <p align="center">![Harsh Patel](https://github.com/HarshPatel5940.png?size=128)<br>[Harsh Patel](https://github.com/HarshPatel5940)</p> | <p align="center">![Inigo Jeevan](https://github.com/inigojeevan.png?size=128)<br>[Inigo Jeevan](https://github.com/inigojeevan)</p> | <p align="center">![Dheekshitha](https://github.com/Dheekshitha24.png?size=128)<br>[Dheekshitha](https://github.com/Dheekshitha24)</p>
- ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | 
+ ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 
 ## License 📜
 
-`marai` is available under the GPL license. See the LICENSE file for more info.
-
-## Forking this repo 🚨
-
-Many people have contacted us asking if they can use this code for their own websites. The answer to that question is usually "yes", with attribution. There are some cases, such as using this code for a business or something that is greater than a personal project, that we may be less comfortable saying yes to. If in doubt, please don't hesitate to ask us.
-
-We value keeping this site open source, but as you all know, plagiarism is bad. We spent a non-negligible amount of effort developing, designing, and trying to perfect this iteration of our website, and we are proud of it! All we ask is to not claim this effort as your own.
-
-So, feel free to fork this repo.
-
-
+`marai` is available under the MPL 2.0 license. See the LICENSE file for more info.
