@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
+import FadeIn from "../common/FadeIn";
 
 const useTypewriter = (text: string, speed: number = 100) => {
   const [displayText, setDisplayText] = useState("");
@@ -16,50 +17,6 @@ const useTypewriter = (text: string, speed: number = 100) => {
   }, [currentIndex, text, speed]);
 
   return displayText;
-};
-
-const FadeIn = ({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const domRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setTimeout(() => {
-            setIsVisible(true);
-          }, delay);
-          if (domRef.current) observer.unobserve(domRef.current);
-        }
-      },
-      { threshold: 0.15 }
-    );
-
-    if (domRef.current) {
-      observer.observe(domRef.current);
-    }
-
-    return () => {
-      if (domRef.current) observer.unobserve(domRef.current);
-    };
-  }, [delay]);
-
-  return (
-    <div
-      ref={domRef}
-      className={`transition-opacity duration-1000 ${
-        isVisible ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      {children}
-    </div>
-  );
 };
 
 const Section = ({
@@ -123,7 +80,6 @@ const HomePage = () => {
               </div>
             </div>
             <div className="md:w-1/2 flex justify-center">
-              {/* Dheekshi add image here */}
               <div className="w-full h-64 md:h-96 bg-gray-200 rounded-lg flex items-center justify-center">
                 <span className="text-gray-500">Hero Image Placeholder</span>
               </div>
@@ -153,7 +109,6 @@ const HomePage = () => {
                   Tell us about your situation and what kind of legal assistance
                   you're looking for.
                 </p>
-                {/* Dheekshi image here */}
                 <div className="w-24 h-24 bg-gray-200 mx-auto mt-4 rounded flex items-center justify-center">
                   <span className="text-gray-500 text-xs">Icon 1</span>
                 </div>
@@ -191,7 +146,6 @@ const HomePage = () => {
                   Communicate directly with selected law firm and get the legal
                   support you need.
                 </p>
-                {/* Dheekshi image */}
                 <div className="w-24 h-24 bg-gray-200 mx-auto mt-4 rounded flex items-center justify-center">
                   <span className="text-gray-500 text-xs">Icon 3</span>
                 </div>
@@ -213,7 +167,6 @@ const HomePage = () => {
             <FadeIn delay={300}>
               <div className="bg-gray-200 hover:bg-gray-50 p-8 rounded-lg shadow-md hover:shadow-xl transition-all hover:-translate-y-2 duration-300">
                 <div className="flex items-center mb-6">
-                  {/* Add random face pics */}
                   <div className="w-16 h-16 bg-gray-400 rounded-full mr-4"></div>
                   <div>
                     <h4 className="text-lg font-semibold text-black">
@@ -233,7 +186,6 @@ const HomePage = () => {
             <FadeIn delay={500}>
               <div className="bg-gray-200 p-8 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                 <div className="flex items-center mb-6">
-                  {/* Add random face pics*/}
                   <div className="w-16 h-16 bg-gray-400 rounded-full mr-4"></div>
                   <div>
                     <h4 className="text-lg font-semibold text-black">
@@ -280,7 +232,6 @@ const HomePage = () => {
             ].map((area, index) => (
               <FadeIn key={area} delay={200 + index * 100}>
                 <div className="bg-gray-200 rounded-lg p-5 text-center hover:bg-gray-50 transition-all duration-300 cursor-pointer transform hover:scale-105">
-                  {/* icons */}
                   <div className="w-10 h-10 bg-black rounded mx-auto mb-3"></div>
                   <h3 className="font-medium text-zinc-950">{area}</h3>
                 </div>

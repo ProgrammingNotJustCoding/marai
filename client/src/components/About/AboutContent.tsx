@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import FadeIn from "../common/FadeIn";
 import Footer from "../common/Footer";
 
 const Section = ({
@@ -15,50 +15,6 @@ const Section = ({
       <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-gray-600 to-transparent opacity-20"></div>
       {children}
     </section>
-  );
-};
-
-const FadeIn = ({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const domRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setTimeout(() => {
-            setIsVisible(true);
-          }, delay);
-          if (domRef.current) observer.unobserve(domRef.current);
-        }
-      },
-      { threshold: 0.15 }
-    );
-
-    if (domRef.current) {
-      observer.observe(domRef.current);
-    }
-
-    return () => {
-      if (domRef.current) observer.unobserve(domRef.current);
-    };
-  }, [delay]);
-
-  return (
-    <div
-      ref={domRef}
-      className={`transition-opacity duration-1000 ${
-        isVisible ? "opacity-100" : "opacity-0"
-      }`}
-    >
-      {children}
-    </div>
   );
 };
 
