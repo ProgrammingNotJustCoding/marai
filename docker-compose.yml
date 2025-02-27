@@ -1,8 +1,8 @@
 services:
   marai_backend:
     build:
-      context: ./backend
-      target: final
+      context: ./apps/server
+      dockerfile: ./Dockerfile
     ports:
       - 8080:8080
     expose:
@@ -15,7 +15,7 @@ services:
 
   marai_postgres:
     container_name: marai-postgres
-    image: postgres:13
+    image: postgres:17
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres

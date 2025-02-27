@@ -15,15 +15,15 @@ docker-logs:
 	@docker compose logs -f
 
 docker-db-up:
-	@echo "Starting Mino and Postgres containers..."
+	@echo "Starting containers..."
 	@docker start marai-postgres
 
 docker-db-down:
-	@echo "Stopping Mino and Postgres containers..."
+	@echo "Stopping containers..."
 	@docker stop marai-postgres
 
 docker-db-restart:
-	@echo "Restarting Mino and Postgres containers..."
+	@echo "Restarting containers..."
 	@docker restart marai-postgres
 
 docker-delete:
