@@ -8,7 +8,22 @@
   box-sizing: border-box;
 }
 
+html,
 body {
-  background-color: white;
-  color: black;
+  background-color: black;
+  min-height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: black;
+}
+
+#root {
+  background-color: black;
+  min-height: 100vh;
+  width: 100%;
 }
