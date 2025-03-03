@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import signUpImage from "../../../public/images/signup.jpeg";
+import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -14,8 +15,11 @@ const SignupPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const navigate = useNavigate();
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    navigate("/signup/verification");
     console.log("Signup with:", formData);
   };
 
@@ -124,7 +128,10 @@ const SignupPage = () => {
 
             <div className="mt-6 text-center text-sm text-zinc-400">
               Already have an account?{" "}
-              <a href="/login" className="text-blue-500 hover:text-blue-400">
+              <a
+                href="/login"
+                className="text-zinc-300 hover:text-white hover:underline"
+              >
                 Log in
               </a>
             </div>
