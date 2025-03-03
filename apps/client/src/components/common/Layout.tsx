@@ -27,7 +27,7 @@ const Layout = () => {
                 Login
               </a>
               <a
-                href="/sign_up"
+                href="/signup"
                 className="bg-black text-white hover:bg-white hover:text-black px-4 py-2 rounded-md text-lg font-medium transition-all duration-300 ease-in-out hover:shadow-lg"
               >
                 Sign Up
