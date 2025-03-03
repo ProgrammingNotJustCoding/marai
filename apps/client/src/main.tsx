@@ -5,6 +5,8 @@ import "./index.css";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import About from "./pages/About";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
 
 const router = createBrowserRouter([
   {
@@ -18,13 +20,13 @@ const router = createBrowserRouter([
     errorElement: <NotFound />,
   },
   {
-    path: "/sign_in",
-    element: <h1>Sign In</h1>,
+    path: "/signup",
+    element: <Signup />,
     errorElement: <NotFound />,
   },
   {
     path: "/login",
-    element: <h1>Login</h1>,
+    element: <Login />,
     errorElement: <NotFound />,
   },
 ]);
