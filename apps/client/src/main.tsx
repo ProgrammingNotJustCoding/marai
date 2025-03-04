@@ -8,6 +8,7 @@ import About from "./pages/About";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import VerificationPage from "./pages/VerificationPage";
+import Dashboard from "./pages/Dashboard";
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,11 @@ const router = createBrowserRouter([
   {
     path: "/signup/verification",
     element: <VerificationPage />,
+    errorElement: <NotFound />,
+  },
+  {
+    path: "/dashboard",
+    element: <Dashboard />,
     errorElement: <NotFound />,
   },
 ]);
