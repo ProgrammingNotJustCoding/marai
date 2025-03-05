@@ -37,3 +37,7 @@ main
 # python
 venv/
 __pycache__/
+
+# swarm
+swarm.egg-info
+marai_agents.egg-info
