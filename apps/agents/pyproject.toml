@@ -1,7 +1,13 @@
 [project]
-name = "swarm"
+dependencies = [
+    "openai",
+    "ollama",
+    "python-dotenv",
+    "git+https://github.com/openai/swarm.git",
+    "boto3",
+]
+name = "marai-agents"
 version = "0.1.0"
 description = "Marai's Swarm server for pooled AI Agents."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []

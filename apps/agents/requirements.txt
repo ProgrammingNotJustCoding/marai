@@ -1,0 +1,6 @@
+openai
+ollama
+python-dotenv
+boto3
+
+# git+https://github.com/openai/swarm.git
