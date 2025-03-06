@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import VerificationPage from "./pages/VerificationPage";
 import Dashboard from "./pages/Dashboard";
+import LawfirmDetails from "./pages/LawfirmDetails";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,11 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard />,
+    errorElement: <NotFound />,
+  },
+  {
+    path: "dashboard/lawfirm/:id",
+    element: <LawfirmDetails />,
     errorElement: <NotFound />,
   },
 ]);

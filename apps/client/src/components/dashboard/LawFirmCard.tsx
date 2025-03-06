@@ -1,21 +1,27 @@
-// src/components/LawFirmCard.tsx
 import React from "react";
 import { motion } from "framer-motion";
 import { FaBuilding } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 import { LawFirm } from "../../types/Lawfirm";
+
 interface LawFirmCardProps {
   firm: LawFirm;
-  onClick: () => void;
 }
 
-const LawFirmCard: React.FC<LawFirmCardProps> = ({ firm, onClick }) => {
+const LawFirmCard: React.FC<LawFirmCardProps> = ({ firm }) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/dashboard/lawfirm/${firm.id}`);
+  };
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
-      onClick={onClick}
+      onClick={handleClick}
       className="bg-neutral-900 border border-neutral-800 rounded-lg p-6 cursor-pointer hover:bg-neutral-850 transition-colors"
     >
       <div className="flex items-center mb-4">

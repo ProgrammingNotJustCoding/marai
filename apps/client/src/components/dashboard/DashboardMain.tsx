@@ -1,22 +1,16 @@
-// src/pages/DashboardMain.tsx
 import React, { useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import debounce from "lodash.debounce";
-
 import Sidebar from "../dashboard/Sidebar";
 import LawFirmSearch from "../dashboard/LawFirmSearch";
 import LawFirmCard from "../dashboard/LawFirmCard";
-import LawFirmDetailsModal from "../dashboard/LawFirmDetailsModel";
-
 import { lawFirmsData } from "../../data/lawFirmsData";
-import { LawFirm } from "../../types/Lawfirm";
 
 const DashboardMain: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSpecializations, setSelectedSpecializations] = useState<
     string[]
   >([]);
-  const [selectedLawFirm, setSelectedLawFirm] = useState<LawFirm | null>(null);
 
   const allSpecializations = useMemo(() => {
     return [...new Set(lawFirmsData.flatMap((firm) => firm.specializations))];
@@ -55,13 +49,14 @@ const DashboardMain: React.FC = () => {
   return (
     <div className="flex h-screen bg-gray-950 text-gray-200">
       <Sidebar />
-
       <div className="flex-1 p-8 overflow-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
+          <h1 className="text-3xl font-bold mb-6">Law Firm Directory</h1>
+
           <LawFirmSearch
             searchQuery={searchQuery}
             onSearchChange={onSearchChange}
@@ -72,28 +67,15 @@ const DashboardMain: React.FC = () => {
 
           <motion.div
             layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6"
           >
             <AnimatePresence>
               {filteredLawFirms.map((firm) => (
-                <LawFirmCard
-                  key={firm.id}
-                  firm={firm}
-                  onClick={() => setSelectedLawFirm(firm)}
-                />
+                <LawFirmCard key={firm.id} firm={firm} />
               ))}
             </AnimatePresence>
           </motion.div>
         </motion.div>
-
-        <AnimatePresence>
-          {selectedLawFirm && (
-            <LawFirmDetailsModal
-              lawFirm={selectedLawFirm}
-              onClose={() => setSelectedLawFirm(null)}
-            />
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );
