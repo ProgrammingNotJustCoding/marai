@@ -1,0 +1,22 @@
+meta {
+  name: Add Lawfirm Member
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{BaseUrl}}/lawfirms/01JNWMM59T5673SD8VSXXME2DS/members
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "userId": "01JKZYMY8PXR6K2EH70A2R8K0A",
+    "roleId": "01JNWN2V0Q062DZWXKX44VE0T4"
+  }
+}

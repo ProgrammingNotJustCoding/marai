@@ -51,6 +51,6 @@ func Setup(app *App) {
 		app.Middlewares,
 		app.AuthController,
 		app.LawfirmController,
-		app.LawFirmMembershipController,
+		app.StartTime,
 	)
 }

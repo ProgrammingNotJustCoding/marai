@@ -47,11 +47,14 @@ func (r *LawFirmRepo) CreateLawFirm(ctx context.Context, lawFirm *schema.LawFirm
 func (r *LawFirmRepo) GetLawFirmByID(ctx context.Context, id string) (*schema.LawFirm, error) {
 	var lawFirm schema.LawFirm
 	result := r.db.WithContext(ctx).
-		Preload("Owner").
-		Preload("Roles").
-		Preload("Memberships.User").
-		Preload("Memberships.Role").
-		Where("id = ?", id).
+		Preload("Owner", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id, username, email, mobile")
+		}).
+		Preload("Memberships.User", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id, username, email, mobile")
+		}).
+		Preload("Roles", "is_deleted = ?", false).
+		Where("id = ? AND is_deleted = ?", id, false).
 		First(&lawFirm)
 
 	if result.Error != nil {
@@ -77,11 +80,20 @@ func (r *LawFirmRepo) UpdateLawFirm(ctx context.Context, lawFirm *schema.LawFirm
 	lawFirm.UpdatedAt = time.Now()
 	result := r.db.WithContext(ctx).Model(lawFirm).
 		Updates(map[string]interface{}{
-			"name":       lawFirm.Name,
-			"address":    lawFirm.Address,
-			"phone":      lawFirm.Phone,
-			"email":      lawFirm.Email,
-			"updated_at": lawFirm.UpdatedAt,
+			"name":               lawFirm.Name,
+			"address":            lawFirm.Address,
+			"phone":              lawFirm.Phone,
+			"email":              lawFirm.Email,
+			"public_contact":     lawFirm.PublicContact,
+			"public_address":     lawFirm.PublicAddress,
+			"public_image_url":   lawFirm.PublicImageUrl,
+			"public_banner_url":  lawFirm.PublicBannerUrl,
+			"public_website_url": lawFirm.PublicWebsiteUrl,
+			"public_socials1":    lawFirm.PublicSocials1,
+			"public_socials2":    lawFirm.PublicSocials2,
+			"public_socials3":    lawFirm.PublicSocials3,
+			"public_socials4":    lawFirm.PublicSocials4,
+			"updated_at":         lawFirm.UpdatedAt,
 		})
 
 	if result.Error != nil {
@@ -91,6 +103,67 @@ func (r *LawFirmRepo) UpdateLawFirm(ctx context.Context, lawFirm *schema.LawFirm
 		return errors.New("law firm not found")
 	}
 	return nil
+}
+
+func (r *LawFirmRepo) IsOwner(ctx context.Context, userID, lawFirmID string) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&schema.LawFirm{}).
+		Where("id = ? AND owner_id = ? AND is_deleted = ?", lawFirmID, userID, false).
+		Count(&count).Error
+	return count > 0, err
+}
+
+func (r *LawFirmRepo) HasAdminPermission(ctx context.Context, userID, lawFirmID string) (bool, error) {
+	var membership schema.LawFirmMembership
+	err := r.db.WithContext(ctx).
+		Joins("JOIN law_firm_roles ON law_firm_memberships.role_id = law_firm_roles.id").
+		Where("law_firm_memberships.user_id = ? AND law_firm_memberships.law_firm_id = ? AND law_firm_roles.perm_firm_admin = ?",
+			userID, lawFirmID, true).
+		First(&membership).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (r *LawFirmRepo) HasPermission(ctx context.Context, userID, lawFirmID, permission string) (bool, error) {
+	query := r.db.WithContext(ctx).
+		Joins("JOIN law_firm_roles ON law_firm_memberships.role_id = law_firm_roles.id").
+		Where("law_firm_memberships.user_id = ? AND law_firm_memberships.law_firm_id = ?",
+			userID, lawFirmID)
+
+	switch permission {
+	case "read":
+		query = query.Where("law_firm_roles.perm_read = ? OR law_firm_roles.perm_write = ? OR law_firm_roles.perm_manage = ? OR law_firm_roles.perm_firm_admin = ?",
+			true, true, true, true)
+	case "write":
+		query = query.Where("law_firm_roles.perm_write = ? OR law_firm_roles.perm_manage = ? OR law_firm_roles.perm_firm_admin = ?",
+			true, true, true)
+	case "manage":
+		query = query.Where("law_firm_roles.perm_manage = ? OR law_firm_roles.perm_firm_admin = ?",
+			true, true)
+	case "admin":
+		query = query.Where("law_firm_roles.perm_firm_admin = ?", true)
+	default:
+		return false, errors.New("invalid permission type")
+	}
+
+	var membership schema.LawFirmMembership
+	err := query.First(&membership).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (r *LawFirmRepo) DeleteLawFirm(ctx context.Context, id string) error {
@@ -112,6 +185,7 @@ func (r *LawFirmRepo) DeleteLawFirm(ctx context.Context, id string) error {
 
 func (r *LawFirmRepo) CreateRole(ctx context.Context, role *schema.LawFirmRole) error {
 	role.ID = ulid.Make().String()
+	role.PermFirmAdmin = false
 	role.CreatedAt = time.Now()
 	role.UpdatedAt = time.Now()
 	return r.db.WithContext(ctx).Create(role).Error
@@ -119,7 +193,7 @@ func (r *LawFirmRepo) CreateRole(ctx context.Context, role *schema.LawFirmRole) 
 
 func (r *LawFirmRepo) GetRoleByID(ctx context.Context, id string) (*schema.LawFirmRole, error) {
 	var role schema.LawFirmRole
-	err := r.db.WithContext(ctx).Where("id = ?", id).First(&role).Error
+	err := r.db.WithContext(ctx).Where("id = ? AND is_deleted = ?", id, false).First(&role).Error
 	if err != nil {
 		return nil, err
 	}
@@ -128,11 +202,35 @@ func (r *LawFirmRepo) GetRoleByID(ctx context.Context, id string) (*schema.LawFi
 
 func (r *LawFirmRepo) UpdateRole(ctx context.Context, role *schema.LawFirmRole) error {
 	role.UpdatedAt = time.Now()
-	return r.db.WithContext(ctx).Model(role).Updates(role).Error
+	result := r.db.WithContext(ctx).Model(&schema.LawFirmRole{}).
+		Where("id = ? AND is_deleted = ?", role.ID, false).
+		Updates(map[string]interface{}{
+			"name":        role.Name,
+			"perm_read":   role.PermRead,
+			"perm_write":  role.PermWrite,
+			"perm_manage": role.PermManage,
+			"updated_at":  role.UpdatedAt,
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return errors.New("role not found")
+	}
+	return nil
+}
+
+func (r *LawFirmRepo) PromoteRoleToAdmin(ctx context.Context, roleID string) error {
+	return r.db.WithContext(ctx).Model(&schema.LawFirmRole{}).Where("id = ? AND is_deleted = ?", roleID, false).Update("perm_manage", true).Error
+}
+
+func (r *LawFirmRepo) DemoteRoleFromAdmin(ctx context.Context, roleID string) error {
+	return r.db.WithContext(ctx).Model(&schema.LawFirmRole{}).Where("id = ? AND is_deleted = ?", roleID, false).Update("perm_manage", false).Error
 }
 
 func (r *LawFirmRepo) DeleteRole(ctx context.Context, id string) error {
-	return r.db.WithContext(ctx).Delete(&schema.LawFirmRole{}, id).Error
+	return r.db.WithContext(ctx).Model(&schema.LawFirmRole{}).Where("id = ? AND is_deleted = ?", id, false).Update("is_deleted", true).Error
 }
 
 func (r *LawFirmRepo) CreateMembership(ctx context.Context, membership *schema.LawFirmMembership) error {
@@ -144,9 +242,9 @@ func (r *LawFirmRepo) CreateMembership(ctx context.Context, membership *schema.L
 func (r *LawFirmRepo) GetMembershipByID(ctx context.Context, id string) (*schema.LawFirmMembership, error) {
 	var membership schema.LawFirmMembership
 	err := r.db.WithContext(ctx).
-		Preload("User").
-		Preload("LawFirm").
-		Preload("Role").
+		Preload("User", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id, username, email, mobile")
+		}).
 		Where("id = ?", id).
 		First(&membership).Error
 	if err != nil {
@@ -158,8 +256,9 @@ func (r *LawFirmRepo) GetMembershipByID(ctx context.Context, id string) (*schema
 func (r *LawFirmRepo) GetMembershipsByLawFirmID(ctx context.Context, lawFirmID string) ([]schema.LawFirmMembership, error) {
 	var memberships []schema.LawFirmMembership
 	err := r.db.WithContext(ctx).
-		Preload("User").
-		Preload("Role").
+		Preload("User", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id, username, email, mobile")
+		}).
 		Where("law_firm_id = ?", lawFirmID).
 		Find(&memberships).Error
 	return memberships, err
@@ -169,7 +268,6 @@ func (r *LawFirmRepo) GetMembershipsByUserID(ctx context.Context, userID string)
 	var memberships []schema.LawFirmMembership
 	err := r.db.WithContext(ctx).
 		Preload("LawFirm").
-		Preload("Role").
 		Where("user_id = ?", userID).
 		Find(&memberships).Error
 	return memberships, err
@@ -180,7 +278,7 @@ func (r *LawFirmRepo) UpdateMembership(ctx context.Context, membership *schema.L
 }
 
 func (r *LawFirmRepo) DeleteMembership(ctx context.Context, id string) error {
-	return r.db.WithContext(ctx).Delete(&schema.LawFirmMembership{}, id).Error
+	return r.db.WithContext(ctx).Delete(&schema.LawFirmMembership{}, "id = ?", id).Error
 }
 
 func (r *LawFirmRepo) IsMember(ctx context.Context, userID, lawFirmID string) (bool, error) {
@@ -189,16 +287,4 @@ func (r *LawFirmRepo) IsMember(ctx context.Context, userID, lawFirmID string) (b
 		Where("user_id = ? AND law_firm_id = ?", userID, lawFirmID).
 		Count(&count).Error
 	return count > 0, err
-}
-
-func (r *LawFirmRepo) GetUserRole(ctx context.Context, userID, lawFirmID string) (*schema.LawFirmRole, error) {
-	var membership schema.LawFirmMembership
-	err := r.db.WithContext(ctx).
-		Preload("Role").
-		Where("user_id = ? AND law_firm_id = ?", userID, lawFirmID).
-		First(&membership).Error
-	if err != nil {
-		return nil, err
-	}
-	return &membership.Role, nil
 }

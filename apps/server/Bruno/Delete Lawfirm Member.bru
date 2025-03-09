@@ -1,0 +1,21 @@
+meta {
+  name: Delete Lawfirm Member
+  type: http
+  seq: 19
+}
+
+delete {
+  url: {{BaseUrl}}/lawfirms/01JNWMM59T5673SD8VSXXME2DS/members/01JNWXRNNY5RX3MD7RGYXDCCG2
+  body: none
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "roleId": "01JNX2ZXAMMGNXJA20XNS3DR4J"
+  }
+}

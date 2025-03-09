@@ -4,12 +4,21 @@ meta {
   seq: 12
 }
 
-get {
-  url: http://localhost:8080/api/lawfirms/01JM97DSBZRN1WXE4Y2S4MTT0M/roles
+post {
+  url: {{BaseUrl}}/lawfirms/01JNWMM59T5673SD8VSXXME2DS/roles
   body: json
   auth: none
 }
 
 headers {
   Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "name": "delete-me",
+    "lawFirmId": "01JM97DSBZRN1WXE4Y2S4MTT0M",
+    "permRead": true,
+    "permWrite": true
+  }
 }
