@@ -1,11 +1,11 @@
 meta {
   name: Get All Lawfirms
   type: http
-  seq: 4
+  seq: 5
 }
 
 get {
-  url: http://localhost:8080/api/lawfirms
+  url: {{BaseUrl}}/lawfirms
   body: json
   auth: none
 }

@@ -42,6 +42,10 @@ type AuthResponse struct {
 	User      interface{} `json:"user,omitempty"`
 }
 
+type PublicUserRequest struct {
+	UserName string `json:"username" validate:"required"`
+}
+
 type AuthController struct {
 	twilioSID     string
 	twillioClient *twilio.RestClient
@@ -312,4 +316,21 @@ func (a *AuthController) HandleSigninPassword(c echo.Context) error {
 		SessionID: session.ID,
 		User:      user,
 	})
+}
+
+func (a *AuthController) HandleGetPublicUsersByUsername(c echo.Context) error {
+	req := new(PublicUserRequest)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
+	}
+
+	user, err := a.userRepo.GetPublicUsersByUsername(c.Request().Context(), req.UserName)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	if user == nil {
+		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
+	}
+
+	return c.JSON(http.StatusOK, user)
 }

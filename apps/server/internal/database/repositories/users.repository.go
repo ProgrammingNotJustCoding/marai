@@ -28,7 +28,7 @@ func (r *UserRepo) CreateUser(ctx context.Context, user *schema.User) error {
 
 func (r *UserRepo) GetUserByID(ctx context.Context, id int) (*schema.User, error) {
 	var user schema.User
-	result := r.db.WithContext(ctx).Where("id = ? AND is_deleted = ?", id, false).First(&user)
+	result := r.db.WithContext(ctx).Where("id = ? AND is_deleted = ?", id, false).Limit(50).First(&user)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -40,9 +40,24 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int) (*schema.User, error
 	return &user, nil
 }
 
+func (r *UserRepo) GetPublicUsersByUsername(ctx context.Context, username string) ([]*schema.User, error) {
+	var users []*schema.User
+
+	result := r.db.WithContext(ctx).Select("id, username, created_at").Where("username LIKE ? AND is_deleted = ?", (username + "%"), false).Limit(50).Find(&users)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, result.Error
+	}
+
+	return users, nil
+}
+
 func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*schema.User, error) {
 	var user schema.User
-	result := r.db.WithContext(ctx).Where("email = ? AND is_deleted = ?", email, false).First(&user)
+	result := r.db.WithContext(ctx).Where("email = ? AND is_deleted = ?", email, false).Limit(50).First(&user)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -56,7 +71,7 @@ func (r *UserRepo) GetUserByEmail(ctx context.Context, email string) (*schema.Us
 
 func (r *UserRepo) GetUserByMobile(ctx context.Context, mobile string) (*schema.User, error) {
 	var user schema.User
-	result := r.db.WithContext(ctx).Where("mobile = ? AND is_deleted = ?", mobile, false).First(&user)
+	result := r.db.WithContext(ctx).Where("mobile = ? AND is_deleted = ?", mobile, false).Limit(50).First(&user)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {

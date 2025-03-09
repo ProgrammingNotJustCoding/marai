@@ -15,11 +15,15 @@ import (
 
 type Middlewares struct {
 	sessionRepo *repositories.SessionRepo
+	lawFirmRepo *repositories.LawFirmRepo
+	roleCache   *RoleCache
 }
 
-func NewMiddlewares(sessionRepo *repositories.SessionRepo) *Middlewares {
+func NewMiddlewares(sessionRepo *repositories.SessionRepo, lawFirmRepo *repositories.LawFirmRepo) *Middlewares {
 	return &Middlewares{
 		sessionRepo: sessionRepo,
+		lawFirmRepo: lawFirmRepo,
+		roleCache:   NewRoleCache(),
 	}
 }
 
@@ -36,8 +40,8 @@ func (mw *Middlewares) SetupMiddlewares(app *echo.Echo) {
 	}))
 	app.Use(m.Secure())
 	app.Use(session.Middleware(sessions.NewCookieStore([]byte(config.GetEnv("GORILLA_SESSIONS_KEY")))))
-	app.Use(m.RateLimiter(m.NewRateLimiterMemoryStore(20)))
-	app.Use(m.Recover())
+	app.Use(m.RateLimiter(m.NewRateLimiterMemoryStore(10)))
+	// app.Use(m.Recover())
 }
 
 func (mw *Middlewares) AuthMiddleware() echo.MiddlewareFunc {
