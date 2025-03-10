@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import verificationImage from "../../../public/images/verification.jpeg";
 import {
   InputOTP,
@@ -6,43 +7,103 @@ import {
   InputOTPSlot,
   InputOTPSeparator,
 } from "../ui/input-otp";
-
-interface VerificationFormData {
-  mobile: string;
-  otp: string;
-}
+import { authAPI } from "../../api/auth";
 
 export default function VerificationPage() {
   const [step, setStep] = useState<"mobile" | "otp">("mobile");
-  const [formData, setFormData] = useState<VerificationFormData>({
+  const [formData, setFormData] = useState({
     mobile: "",
     otp: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [resendCountdown, setResendCountdown] = useState(0);
+  const navigate = useNavigate();
 
-  const handleMobileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    const savedMobile = localStorage.getItem("verificationMobile");
+    if (savedMobile) {
+      setFormData((prev) => ({ ...prev, mobile: savedMobile }));
+      setStep("otp");
+      handleSendOTP(savedMobile);
+    }
+  }, []);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (resendCountdown > 0) {
+      timer = setTimeout(() => setResendCountdown((prev) => prev - 1), 1000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [resendCountdown]);
+
+  const handleSendOTP = async (mobileNumber: string) => {
     setIsSubmitting(true);
+    setError("");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await authAPI.requestSigninOTP(mobileNumber);
       setStep("otp");
-    } catch (error) {
-      console.error("Error sending OTP:", error);
+      setResendCountdown(30);
+    } catch (err: any) {
+      console.error("Error sending OTP:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to send verification code. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const handleMobileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await handleSendOTP(formData.mobile);
+  };
+
   const handleOTPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError("");
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      console.log("Verification successful", formData);
-    } catch (error) {
-      console.error("Error verifying OTP:", error);
+      const response = await authAPI.verifySigninOTP({
+        mobile: formData.mobile,
+        otp: formData.otp,
+      });
+
+      if (response.user) {
+        localStorage.removeItem("verificationMobile");
+        navigate("/dashboard");
+      }
+    } catch (err: any) {
+      console.error("Error verifying OTP:", err);
+      setError(
+        err.response?.data?.message ||
+          "Invalid verification code. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (resendCountdown > 0) return;
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      await authAPI.resendSigninOTP(formData.mobile);
+      setResendCountdown(30);
+    } catch (err: any) {
+      console.error("Error resending OTP:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to resend code. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -82,6 +143,12 @@ export default function VerificationPage() {
                 ? "Enter your mobile number to receive a verification code"
                 : `We've sent a code to ${formData.mobile}`}
             </p>
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-md mb-4 text-sm">
+                {error}
+              </div>
+            )}
 
             {step === "mobile" ? (
               <form onSubmit={handleMobileSubmit} className="space-y-4">
@@ -167,9 +234,17 @@ export default function VerificationPage() {
                     Didn't receive a code?{" "}
                     <button
                       type="button"
-                      className="text-zinc-300 hover:text-white hover:underline"
+                      onClick={handleResendOTP}
+                      className={`text-zinc-300 hover:text-white hover:underline ${
+                        resendCountdown > 0
+                          ? "opacity-50 cursor-not-allowed"
+                          : ""
+                      }`}
+                      disabled={resendCountdown > 0}
                     >
-                      Resend
+                      {resendCountdown > 0
+                        ? `Resend in ${resendCountdown}s`
+                        : "Resend"}
                     </button>
                   </p>
                 </div>

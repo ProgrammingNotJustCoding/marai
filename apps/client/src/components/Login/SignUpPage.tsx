@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import signUpImage from "../../../public/images/signup.jpeg";
 import { useNavigate } from "react-router-dom";
+import { authAPI } from "../../api/auth";
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,8 @@ const SignupPage = () => {
     mobile: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -17,10 +20,35 @@ const SignupPage = () => {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/signup/verification");
-    console.log("Signup with:", formData);
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const formattedMobile = formData.mobile.startsWith("+")
+        ? formData.mobile
+        : `+${formData.mobile}`;
+
+      const updatedFormData = {
+        ...formData,
+        mobile: formattedMobile,
+      };
+
+      await authAPI.signup(updatedFormData);
+
+      localStorage.setItem("verificationMobile", formattedMobile);
+
+      navigate("/signup/verification");
+    } catch (err: any) {
+      console.error("Signup error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to create account. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -47,6 +75,12 @@ const SignupPage = () => {
             <p className="text-zinc-400 text-sm mb-6">
               Enter your details below to sign up
             </p>
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-md mb-4 text-sm">
+                {error}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -115,14 +149,18 @@ const SignupPage = () => {
                   onChange={handleChange}
                   className="w-full px-3 py-2 bg-zinc-900/80 border border-zinc-800 rounded-md text-white text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 shadow-sm shadow-zinc-900/50"
                   required
+                  minLength={8}
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full bg-white text-black font-medium py-2 px-4 rounded-md hover:bg-zinc-200 transition duration-200 mt-2 shadow-md shadow-zinc-900/30"
+                className={`w-full bg-white text-black font-medium py-2 px-4 rounded-md hover:bg-zinc-200 transition duration-200 mt-2 shadow-md shadow-zinc-900/30 ${
+                  isLoading ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+                disabled={isLoading}
               >
-                Sign up
+                {isLoading ? "Creating Account..." : "Sign up"}
               </button>
             </form>
 

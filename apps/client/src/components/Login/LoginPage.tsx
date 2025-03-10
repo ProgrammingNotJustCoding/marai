@@ -1,13 +1,71 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SignInImage from "../../../public/images/signin.jpeg";
+import { authAPI } from "../../api/auth";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState("");
+  const [loginMethod, setLoginMethod] = useState<"password" | "otp">(
+    "password"
+  );
+  const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSwitchMethod = () => {
+    setLoginMethod((prev) => (prev === "password" ? "otp" : "password"));
+    setError("");
+  };
+
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt with:", { email, password });
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const formattedMobile = mobile.startsWith("+") ? mobile : `+${mobile}`;
+
+      const response = await authAPI.signinWithPassword({
+        mobile: formattedMobile,
+        password,
+      });
+
+      if (response.user) {
+        navigate("/dashboard");
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(
+        err.response?.data?.message || "Invalid credentials. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOTPLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const formattedMobile = mobile.startsWith("+") ? mobile : `+${mobile}`;
+
+      await authAPI.requestSigninOTP(formattedMobile);
+
+      localStorage.setItem("verificationMobile", formattedMobile);
+
+      navigate("/login/verification");
+    } catch (err: any) {
+      console.error("OTP request error:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to send verification code. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -26,64 +84,129 @@ const LoginPage = () => {
 
         <div className="w-full md:w-1/2 bg-zinc-950 text-white relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-900/30 to-zinc-950 pointer-events-none"></div>
-
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-zinc-700/5 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-zinc-700/5 rounded-full blur-3xl"></div>
 
           <div className="p-8 relative z-10">
             <h2 className="text-xl font-semibold mb-1">Login</h2>
             <p className="text-zinc-400 text-sm mb-6">
-              Enter your email below to login to your account
+              {loginMethod === "password"
+                ? "Enter your details below to login"
+                : "We'll send a verification code to your mobile"}
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm text-zinc-400">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="m@example.com"
-                  className="w-full px-3 py-2 bg-zinc-900/80 border border-zinc-800 rounded-md text-white text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 shadow-sm shadow-zinc-900/50"
-                  required
-                />
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-md mb-4 text-sm">
+                {error}
               </div>
+            )}
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
+            <div className="flex space-x-2 mb-6">
+              <button
+                onClick={() => setLoginMethod("password")}
+                className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                  loginMethod === "password"
+                    ? "bg-zinc-800 text-white"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                Password
+              </button>
+              <button
+                onClick={() => setLoginMethod("otp")}
+                className={`px-4 py-2 text-sm rounded-md transition-colors ${
+                  loginMethod === "otp"
+                    ? "bg-zinc-800 text-white"
+                    : "text-zinc-400 hover:text-white"
+                }`}
+              >
+                OTP
+              </button>
+            </div>
+
+            {loginMethod === "password" ? (
+              <form onSubmit={handlePasswordLogin} className="space-y-4">
+                <div className="space-y-2">
                   <label
-                    htmlFor="password"
+                    htmlFor="mobile"
                     className="block text-sm text-zinc-400"
                   >
-                    Password
+                    Mobile
                   </label>
-                  <a
-                    href="#"
-                    className="text-xs text-zinc-400 hover:text-zinc-300"
-                  >
-                    Forgot your password?
-                  </a>
+                  <input
+                    id="mobile"
+                    type="tel"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    placeholder="+1 (555) 000-0000"
+                    className="w-full px-3 py-2 bg-zinc-900/80 border border-zinc-800 rounded-md text-white text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 shadow-sm shadow-zinc-900/50"
+                    required
+                  />
                 </div>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-zinc-900/80 border border-zinc-800 rounded-md text-white text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 shadow-sm shadow-zinc-900/50"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full bg-white text-black font-medium py-2 px-4 rounded-md hover:bg-zinc-200 transition duration-200 mt-2 shadow-md shadow-zinc-900/30"
-              >
-                Login
-              </button>
-            </form>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="password"
+                      className="block text-sm text-zinc-400"
+                    >
+                      Password
+                    </label>
+                    <a
+                      href="#"
+                      className="text-xs text-zinc-400 hover:text-zinc-300"
+                    >
+                      Forgot your password?
+                    </a>
+                  </div>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full px-3 py-2 bg-zinc-900/80 border border-zinc-800 rounded-md text-white text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 shadow-sm shadow-zinc-900/50"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className={`w-full bg-white text-black font-medium py-2 px-4 rounded-md hover:bg-zinc-200 transition duration-200 mt-2 shadow-md shadow-zinc-900/30 ${
+                    isLoading ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Signing in..." : "Sign in"}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleOTPLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <label
+                    htmlFor="mobile-otp"
+                    className="block text-sm text-zinc-400"
+                  >
+                    Mobile
+                  </label>
+                  <input
+                    id="mobile-otp"
+                    type="tel"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    placeholder="+1 (555) 000-0000"
+                    className="w-full px-3 py-2 bg-zinc-900/80 border border-zinc-800 rounded-md text-white text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 shadow-sm shadow-zinc-900/50"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className={`w-full bg-white text-black font-medium py-2 px-4 rounded-md hover:bg-zinc-200 transition duration-200 mt-2 shadow-md shadow-zinc-900/30 ${
+                    isLoading ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Sending code..." : "Send verification code"}
+                </button>
+              </form>
+            )}
 
             <div className="mt-6 text-center text-sm text-zinc-400">
               Don't have an account?{" "}
