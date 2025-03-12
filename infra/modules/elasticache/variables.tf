@@ -1,39 +1,42 @@
 variable "cluster_id" {
-  description = "The ID of the ElastiCache cluster"
+  description = "ElastiCache cluster ID"
   type        = string
 }
 
 variable "engine" {
   description = "ElastiCache engine (redis or memcached)"
   type        = string
+  default     = "redis"
 }
 
 variable "node_type" {
-  description = "The instance type for the ElastiCache nodes"
+  description = "ElastiCache node type"
   type        = string
 }
 
 variable "num_cache_nodes" {
-  description = "The number of cache nodes"
+  description = "Number of cache nodes"
   type        = number
+  default     = 1
 }
 
 variable "parameter_group_name" {
-  description = "The parameter group for ElastiCache"
+  description = "ElastiCache parameter group name"
   type        = string
+  default     = "default.redis7"
 }
 
 variable "subnet_group_name" {
-  description = "Subnet group name for ElastiCache"
+  description = "ElastiCache subnet group name"
   type        = string
 }
 
 variable "subnet_ids" {
-  description = "List of subnet IDs for the ElastiCache cluster"
+  description = "Subnet IDs for ElastiCache"
   type        = list(string)
 }
 
 variable "security_group_ids" {
-  description = "List of security group IDs for ElastiCache"
+  description = "Security group IDs for ElastiCache"
   type        = list(string)
 }

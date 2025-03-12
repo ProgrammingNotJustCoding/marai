@@ -4,19 +4,19 @@ variable "queue_name" {
 }
 
 variable "delay_seconds" {
-  description = "The time in seconds that the delivery of all messages in the queue will be delayed"
+  description = "Delay in seconds before delivering messages"
   type        = number
   default     = 0
 }
 
 variable "max_message_size" {
-  description = "The limit of how many bytes a message can contain"
+  description = "Maximum message size in bytes"
   type        = number
   default     = 262144
 }
 
 variable "message_retention_seconds" {
-  description = "The number of seconds SQS retains a message"
+  description = "Message retention period in seconds"
   type        = number
   default     = 345600
 }

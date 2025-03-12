@@ -1,4 +1,4 @@
-resource "aws_security_group" "sg" {
+resource "aws_security_group" "this" {
   name        = var.sg_name
   description = var.sg_description
   vpc_id      = var.vpc_id
@@ -14,15 +14,12 @@ resource "aws_security_group" "sg" {
     }
   }
 
-  dynamic "egress" {
-    for_each = var.egress_rules
-    content {
-      from_port   = egress.value.from_port
-      to_port     = egress.value.to_port
-      protocol    = egress.value.protocol
-      cidr_blocks = egress.value.cidr_blocks
-      description = egress.value.description
-    }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
   }
 
   tags = {

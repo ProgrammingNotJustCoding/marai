@@ -1,5 +1,8 @@
 provider "aws" {
-  region = var.aws_region
+  region     = var.aws_region
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
+  token = var.aws_session_token
 }
 
 module "security_group" {
@@ -53,22 +56,23 @@ module "sqs" {
 }
 
 module "ec2" {
-  aws_region    = var.aws_region
   source        = "./modules/ec2"
+  aws_region    = var.aws_region
   ami           = var.ami
   instance_type = var.instance_type
   subnet_id     = var.subnet_id
   key_name      = var.key_name
+  security_group_ids = [module.security_group.sg_id]
 }
 
 module "elasticache" {
   source               = "./modules/elasticache"
-  cluster_id           = "my-cache-cluster"
+  cluster_id           = var.cache_cluster_id
   engine               = "redis"
-  node_type            = "cache.t3.micro"
-  num_cache_nodes      = 1
-  parameter_group_name = "default.redis6.x"
-  subnet_group_name    = "my-elasticache-subnet-group"
+  node_type            = var.cache_node_type
+  num_cache_nodes      = var.cache_nodes
+  parameter_group_name = "default.redis7"
+  subnet_group_name    = var.cache_subnet_group_name
   subnet_ids           = var.ec_subnet_ids
   security_group_ids   = [module.security_group.sg_id]
 }
@@ -82,19 +86,16 @@ module "s3" {
 
 module "rds" {
   source               = "./modules/rds"
-  db_identifier        = "my-rds-instance"
-  db_engine            = "mysql"
-  db_engine_version    = "8.0"
-  db_instance_class    = "db.t3.micro"
-  db_allocated_storage = 20
+  db_identifier        = var.db_identifier
+  db_engine            = var.db_engine
+  db_engine_version    = var.db_engine_version
+  db_instance_class    = var.db_instance_class
+  db_allocated_storage = var.db_allocated_storage
   db_username          = var.db_username
   db_password          = var.db_password
-  parameter_group_name = "default.mysql8.0"
-  subnet_group_name    = "my-rds-subnet-group"
+  parameter_group_name = "default.${var.db_engine}${var.db_engine_version}"
+  subnet_group_name    = var.db_subnet_group_name
   subnet_ids           = var.rds_subnet_ids
   security_group_ids   = [module.security_group.sg_id]
-  multi_az             = false
+  multi_az             = var.db_multi_az
 }
-
-
-

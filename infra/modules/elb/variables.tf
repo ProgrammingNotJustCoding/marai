@@ -1,14 +1,14 @@
 variable "elb_name" {
-  description = "Name of the Elastic Load Balancer"
+  description = "Name of the ELB"
   type        = string
 }
 
 variable "vpc_id" {
-  description = "ID of the VPC where resources will be deployed"
+  description = "VPC ID for ELB"
   type        = string
 }
 
 variable "subnet_ids" {
-  description = "List of subnet IDs for the ELB"
+  description = "Subnet IDs for ELB"
   type        = list(string)
 }
