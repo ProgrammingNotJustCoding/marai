@@ -4,7 +4,7 @@ variable "log_group_name" {
 }
 
 variable "retention_in_days" {
-  description = "Number of days to retain logs"
+  description = "Log retention period in days"
   type        = number
   default     = 30
 }

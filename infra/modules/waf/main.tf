@@ -1,6 +1,6 @@
 resource "aws_wafv2_web_acl" "this" {
   name        = var.waf_name
-  description = "WAF Web ACL for Marai application"
+  description = "WAF for API protection"
   scope       = "REGIONAL"
 
   default_action {
@@ -14,24 +14,24 @@ resource "aws_wafv2_web_acl" "this" {
   }
 
   rule {
-    name     = "RateLimit"
+    name     = "SQLiRule"
     priority = 1
-
-    action {
-      block {}
+  
+    override_action {
+      none {}
     }
-
+  
     statement {
-      rate_based_statement {
-        limit              = 2000
-        aggregate_key_type = "IP"
+      managed_rule_group_statement {
+        name        = "AWSManagedRulesSQLiRuleSet"
+        vendor_name = "AWS"
       }
     }
-
+  
     visibility_config {
       cloudwatch_metrics_enabled = true
-      metric_name                = "RateLimit"
+      metric_name                = "SQLiRule"
       sampled_requests_enabled   = true
     }
-  }
+}
 }

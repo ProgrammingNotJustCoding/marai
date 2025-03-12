@@ -1,9 +1,7 @@
 output "dns_name" {
-  description = "DNS name of the ELB"
-  value       = aws_lb.this.dns_name
+  value = aws_lb.this.dns_name
 }
 
-output "lb_arn" {
-  description = "ARN of the ELB"
-  value       = aws_lb.this.arn
+output "target_group_arn" {
+  value = aws_lb_target_group.this.arn
 }

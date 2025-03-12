@@ -1,9 +1,11 @@
-output "s3_bucket_id" {
-  description = "The ID of the S3 bucket"
-  value       = aws_s3_bucket.s3_bucket.id
+output "bucket_name" {
+  value = aws_s3_bucket.this.bucket
 }
 
-output "s3_bucket_arn" {
-  description = "The ARN of the S3 bucket"
-  value       = aws_s3_bucket.s3_bucket.arn
+output "bucket_arn" {
+  value = aws_s3_bucket.this.arn
+}
+
+output "bucket_domain_name" {
+  value = aws_s3_bucket.this.bucket_domain_name
 }

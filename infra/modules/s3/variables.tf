@@ -4,12 +4,12 @@ variable "bucket_name" {
 }
 
 variable "environment" {
-  description = "Deployment environment (e.g., dev, prod)"
+  description = "Environment (dev, staging, prod)"
   type        = string
 }
 
 variable "enable_versioning" {
-  description = "Enable versioning for S3 bucket"
+  description = "Enable bucket versioning"
   type        = bool
   default     = true
 }
