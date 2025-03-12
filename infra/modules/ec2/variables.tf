@@ -4,7 +4,7 @@ variable "aws_region" {
 }
 
 variable "ami" {
-  description = "The AMI ID for the EC2 instance"
+  description = "AMI ID for the EC2 instance"
   type        = string
 }
 
@@ -14,11 +14,17 @@ variable "instance_type" {
 }
 
 variable "subnet_id" {
-  description = "Subnet ID for the EC2 instance"
+  description = "Subnet ID for EC2 instance"
   type        = string
 }
 
 variable "key_name" {
-  description = "Key pair name for SSH access"
+  description = "SSH key name"
   type        = string
+}
+
+variable "security_group_ids" {
+  description = "Security group IDs for EC2 instance"
+  type        = list(string)
+  default     = []
 }

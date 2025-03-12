@@ -30,9 +30,18 @@ dist-ssr
 tmp
 main
 
-# terraform
-.terraform
+# Terraform files
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
 .terraform.lock.hcl
+
+# Local credentials
+credentials.tfvars
+terraform.tfvars
+.env
+setup_aws_env.sh
 
 # python
 venv/

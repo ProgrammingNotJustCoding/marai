@@ -1,9 +1,7 @@
-output "cache_cluster_id" {
-  description = "The ID of the ElastiCache cluster"
-  value       = aws_elasticache_cluster.cache_cluster.id
+output "endpoint" {
+  value = aws_elasticache_cluster.this.cache_nodes[0].address
 }
 
-output "cache_endpoint" {
-  description = "The endpoint of the ElastiCache cluster"
-  value       = aws_elasticache_cluster.cache_cluster.configuration_endpoint
+output "port" {
+  value = aws_elasticache_cluster.this.cache_nodes[0].port
 }

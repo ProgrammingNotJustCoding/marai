@@ -1,0 +1,41 @@
+aws_region =
+
+vpc_id =
+subnet_ids =
+ec_subnet_ids =
+rds_subnet_ids =
+subnet_id =
+
+allowed_cidr_blocks =
+
+log_group_name =
+retention_in_days =
+
+waf_name =
+elb_name =
+
+queue_name =
+delay_seconds =
+max_message_size =
+message_retention_seconds =
+
+ami =
+instance_type =
+key_name =
+
+s3_bucket_name =
+environment =
+enable_versioning =
+
+db_identifier =
+db_engine =
+db_engine_version =
+db_instance_class =
+db_allocated_storage =
+db_subnet_group_name =
+db_multi_az =
+
+cache_cluster_id =
+cache_node_type =
+cache_nodes =
+cache_subnet_group_name =
