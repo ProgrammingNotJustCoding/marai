@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import signUpImage from "../../../public/images/signup.jpeg";
 import { useNavigate } from "react-router-dom";
+import instance from "../../api/axios";
 
 const SignupPage = () => {
+  const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -17,10 +19,53 @@ const SignupPage = () => {
 
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const isValidForm = () => {
+    const [errorMessage, setErrorMessage] = useState("");
+    const { username, email, mobile, password } = formData;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const mobileRegex = /^\+91[6-9]\d{9}$/;
+
+    if (!username || username.length < 3) {
+      setErrorMessage("Username must be at least 3 characters");
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setErrorMessage("Invalid email format");
+      return false;
+    }
+    if (!mobileRegex.test(mobile)) {
+      setErrorMessage(
+        "Enter a valid Indian mobile number (e.g., +91 6374954911)"
+      );
+      return false;
+    }
+    if (!password || password.length < 6) {
+      setErrorMessage("Password must be at least 6 characters");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/signup/verification");
-    console.log("Signup with:", formData);
+    setErrorMessage("");
+    if (!isValidForm) return;
+    try {
+      const { username, email, mobile, password } = formData;
+      const response = await instance.post(
+        "/auth/user/signup",
+        { username, email, mobile, password },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      navigate("/signup/verification");
+      console.log(response);
+    } catch (error) {
+      console.log("signup Failed: ", error);
+      console.log(formData);
+    }
   };
 
   return (
