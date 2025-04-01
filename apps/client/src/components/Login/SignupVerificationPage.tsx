@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import verificationImage from "../../../public/images/verification.jpeg";
+import instance from "../../api/axios";
 import {
   InputOTP,
   InputOTPGroup,
@@ -22,11 +23,29 @@ export default function VerificationPage() {
 
   const handleMobileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (formData.mobile.length < 10) {
+      console.log("Enter a valid number");
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setStep("otp");
+      const response = await instance.post(
+        "/user/signin/otp",
+        {
+          mobile: formData.mobile,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("success");
+        setStep("otp");
+      }
     } catch (error) {
       console.error("Error sending OTP:", error);
     } finally {
@@ -37,8 +56,21 @@ export default function VerificationPage() {
   const handleOTPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
     try {
+      const response = await instance.post(
+        "/user/signup/verify",
+        {
+          mobile: formData.mobile,
+          otp: formData.otp,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      if (response.status === 200) {
+        console.log("verified");
+      }
       await new Promise((resolve) => setTimeout(resolve, 1000));
       console.log("Verification successful", formData);
     } catch (error) {
@@ -50,6 +82,29 @@ export default function VerificationPage() {
 
   const handleOTPChange = (value: string) => {
     setFormData((prev) => ({ ...prev, otp: value }));
+  };
+
+  const resendOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const response = await instance.post(
+        "/user/signin/otp/resend",
+        {
+          mobile: formData.mobile,
+        },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      if (response.status === 200) {
+        console.log("success resend");
+      }
+    } catch (error) {
+      console.log("failed to send resend: ", error);
+    }
   };
 
   return (
@@ -168,6 +223,7 @@ export default function VerificationPage() {
                     <button
                       type="button"
                       className="text-zinc-300 hover:text-white hover:underline"
+                      onClick={resendOTP}
                     >
                       Resend
                     </button>

@@ -1,13 +1,28 @@
 import React, { useState } from "react";
 import SignInImage from "../../../public/images/signin.jpeg";
+import instance from "../../api/axios";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login attempt with:", { email, password });
+    try {
+      const response = await instance.post(
+        "/user/signin/password",
+        { email, password },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      console.log(response);
+      setEmail("");
+      setPassword("");
+    } catch (error) {
+      console.log("login failed: ", error);
+    }
   };
 
   return (

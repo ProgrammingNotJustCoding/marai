@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import signUpImage from "../../../public/images/signup.jpeg";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
+import instance from "../../api/axios";
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -15,12 +16,25 @@ const SignupPage = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate("/signup/verification");
-    console.log("Signup with:", formData);
+    try {
+      const { username, email, mobile, password } = formData;
+      const response = await instance.post(
+        "/auth/user/signup",
+        { username, email, mobile, password },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      console.log(response);
+    } catch (error) {
+      console.log("signup Failed: ", error);
+    }
+    // navigate("/signup/verification");
   };
 
   return (
