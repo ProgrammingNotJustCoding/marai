@@ -3,22 +3,22 @@ import SignInImage from "../../../public/images/signin.jpeg";
 import instance from "../../api/axios";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState("");
+  const [mobile, setNumber] = useState("");
   const [password, setPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const response = await instance.post(
-        "/user/signin/password",
-        { email, password },
+        "auth/user/signin/password",
+        { mobile, password },
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         }
       );
       console.log(response);
-      setEmail("");
+      setNumber("");
       setPassword("");
     } catch (error) {
       console.log("login failed: ", error);
@@ -48,20 +48,20 @@ const LoginPage = () => {
           <div className="p-8 relative z-10">
             <h2 className="text-xl font-semibold mb-1">Login</h2>
             <p className="text-zinc-400 text-sm mb-6">
-              Enter your email below to login to your account
+              Enter your details below to login to your account
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm text-zinc-400">
-                  Email
+                <label htmlFor="number" className="block text-sm text-zinc-400">
+                  Number
                 </label>
                 <input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="m@example.com"
+                  value={mobile}
+                  onChange={(e) => setNumber(e.target.value)}
+                  placeholder="+912345678987"
                   className="w-full px-3 py-2 bg-zinc-900/80 border border-zinc-800 rounded-md text-white text-sm focus:outline-none focus:ring-1 focus:ring-zinc-700 focus:border-zinc-700 shadow-sm shadow-zinc-900/50"
                   required
                 />
@@ -75,12 +75,6 @@ const LoginPage = () => {
                   >
                     Password
                   </label>
-                  <a
-                    href="#"
-                    className="text-xs text-zinc-400 hover:text-zinc-300"
-                  >
-                    Forgot your password?
-                  </a>
                 </div>
                 <input
                   id="password"
@@ -94,6 +88,7 @@ const LoginPage = () => {
 
               <button
                 type="submit"
+                onClick={handleSubmit}
                 className="w-full bg-white text-black font-medium py-2 px-4 rounded-md hover:bg-zinc-200 transition duration-200 mt-2 shadow-md shadow-zinc-900/30"
               >
                 Login

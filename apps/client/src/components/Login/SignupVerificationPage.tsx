@@ -32,7 +32,7 @@ export default function VerificationPage() {
 
     try {
       const response = await instance.post(
-        "/user/signin/otp",
+        "auth/user/signin/otp",
         {
           mobile: formData.mobile,
         },
