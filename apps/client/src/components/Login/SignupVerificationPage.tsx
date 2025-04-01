@@ -58,7 +58,7 @@ export default function VerificationPage() {
     setIsSubmitting(true);
     try {
       const response = await instance.post(
-        "/user/signup/verify",
+        "auth/user/signup/verify",
         {
           mobile: formData.mobile,
           otp: formData.otp,
@@ -90,7 +90,7 @@ export default function VerificationPage() {
 
     try {
       const response = await instance.post(
-        "/user/signin/otp/resend",
+        "auth/user/signin/otp/resend",
         {
           mobile: formData.mobile,
         },
