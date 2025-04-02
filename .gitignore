@@ -44,7 +44,7 @@ terraform.tfvars
 setup_aws_env.sh
 
 # python
-venv/
+.venv/
 __pycache__/
 
 # swarm

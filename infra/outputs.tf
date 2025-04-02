@@ -6,9 +6,9 @@ output "cloudwatch_log_group_arn" {
   value = module.cloudwatch.log_group_arn
 }
 
-output "waf_id" {
-  value = module.waf.id
-}
+# output "waf_id" {
+#   value = module.waf.id
+# }
 
 output "elb_dns" {
   value = module.elb.dns_name
