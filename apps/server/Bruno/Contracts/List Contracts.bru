@@ -1,0 +1,22 @@
+meta {
+  name: List Contracts
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{BaseUrl}}/contracts/law-firm/{{lawFirmId}}
+  query: {
+    status: draft,
+    isTemplate: false,
+    limit: 10,
+    offset: 0,
+    orderBy: createdAt,
+    sortDirection: desc
+  }
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}

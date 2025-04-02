@@ -6,6 +6,7 @@ import (
 	"marai/internal/database/repositories"
 	"marai/internal/database/schema"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -110,9 +111,17 @@ func (a *AuthController) HandleUserSignup(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
+
+	if existingUser != nil && existingUser.IsMobileVerified {
+		return c.JSON(http.StatusConflict, map[string]string{
+			"message": "User already exists",
+		})
+	}
+
 	if existingUser == nil {
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(reqUser.Password), bcrypt.DefaultCost)
 		if err != nil {
+			c.Logger().Error("Password hashing failed:", err)
 			return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 		}
 
@@ -124,19 +133,21 @@ func (a *AuthController) HandleUserSignup(c echo.Context) error {
 		}
 
 		if err := a.userRepo.CreateUser(c.Request().Context(), user); err != nil {
-			return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+			if !strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				c.Logger().Error("Failed to create user:", err)
+				return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+			}
 		}
 	}
 
 	if err := a.sendOtp(c, reqUser.Mobile); err != nil {
-		c.Logger().Error(err)
+		c.Logger().Error("Failed to send OTP:", err)
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"status":  200,
 		"message": "OTP sent successfully",
-		"data": map[string]interface{}{
+		"data": map[string]string{
 			"mobile": reqUser.Mobile,
 		},
 	})

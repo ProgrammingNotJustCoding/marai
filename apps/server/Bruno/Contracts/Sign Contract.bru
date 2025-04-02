@@ -1,0 +1,21 @@
+meta {
+  name: Sign Contract
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{BaseUrl}}/contracts/{{contractId}}/sign
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "signature": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAA..."
+  }
+}

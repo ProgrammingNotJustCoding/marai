@@ -1,0 +1,25 @@
+meta {
+  name: Add Contract Party
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BaseUrl}}/contracts/{{contractId}}/parties
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "userId": "01JNXYZ123456789ABCDEF",
+    "name": "John Doe",
+    "email": "john.doe@example.com",
+    "mobile": "+1234567890",
+    "role": "Signatory"
+  }
+}

@@ -1,0 +1,24 @@
+meta {
+  name: Update Contract
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{BaseUrl}}/contracts/01JQVN08KJRM0RSSSX8GPRE6T3
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "title": "Updated Contract Title",
+    "description": "Updated contract description",
+    "content": "Updated contract content",
+    "status": "pending_signature"
+  }
+}

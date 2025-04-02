@@ -19,6 +19,11 @@ var env = map[string]interface{}{
 	"TWILIO_ACCOUNT_SID":       nil,
 	"TWILIO_AUTH_TOKEN":        nil,
 	"TWILIO_VERIFY_SERVICE_ID": nil,
+	"MINIO_ACCESS_KEY":         nil,
+	"MINIO_ACCESS_SECRET":      nil,
+	"MINIO_SSL_POLICY":         "false",
+	"MINIO_BUCKET_NAME":        "marai",
+	"MINIO_ENDPOINT":           "localhost:9000",
 }
 
 func GetEnv(key string, fallback ...string) string {

@@ -43,7 +43,11 @@ func (r *UserRepo) GetUserByID(ctx context.Context, id int) (*schema.User, error
 func (r *UserRepo) GetPublicUsersByUsername(ctx context.Context, username string) ([]*schema.User, error) {
 	var users []*schema.User
 
-	result := r.db.WithContext(ctx).Select("id, username, created_at").Where("username LIKE ? AND is_deleted = ?", (username + "%"), false).Limit(50).Find(&users)
+	result := r.db.WithContext(ctx).
+		Select("id, username, created_at").
+		Where("username LIKE ? AND is_deleted = ?", (username + "%"), false).
+		Limit(50).
+		Find(&users)
 
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
@@ -94,6 +98,7 @@ func (r *UserRepo) GetUsers(ctx context.Context, page, pageSize int) ([]schema.U
 	}
 
 	result := r.db.WithContext(ctx).
+		Select("id, username, email, mobile, is_email_verified, is_mobile_verified, is_deleted, is_super_admin, last_login_at, created_at, updated_at").
 		Where("is_deleted = ?", false).
 		Offset(offset).
 		Limit(pageSize).

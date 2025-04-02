@@ -12,6 +12,7 @@ func SetupRoutes(router *echo.Group,
 	mW *middlewares.Middlewares,
 	aC *controllers.AuthController,
 	lC *controllers.LawFirmController,
+	cC *controllers.ContractsController,
 	startTime time.Time,
 ) {
 
@@ -25,7 +26,6 @@ func SetupRoutes(router *echo.Group,
 	})
 
 	authRouter := router.Group("/auth")
-
 	authRouter.POST("/user/signup", aC.HandleUserSignup)
 	authRouter.POST("/user/signup/verify", aC.HandleUserSignupVerify)
 
@@ -62,6 +62,24 @@ func SetupRoutes(router *echo.Group,
 	// TODO: Make usefull user routes later - like reset pwd, current cases, etc... etc...
 
 	// TODO: Make usefull admin routes later
+
+	// TODO Contracts routes
+	contractsRouter := router.Group("/contracts")
+	contractsRouter.Use(mW.AuthMiddleware())
+
+	contractsRouter.POST("", cC.HandleCreateContract)
+	contractsRouter.GET("/law-firm/:lawFirmId", cC.HandleListContracts)
+	contractsRouter.GET("/:id", cC.HandleGetContract)
+	contractsRouter.PUT("/:id", cC.HandleUpdateContract)
+	contractsRouter.DELETE("/:id", cC.HandleDeleteContract)
+
+	contractsRouter.POST("/:id/file", cC.HandleUploadContractFile)
+	contractsRouter.GET("/:id/file", cC.HandleGetContractFile)
+
+	contractsRouter.POST("/:id/parties", cC.HandleAddContractParty)
+	contractsRouter.DELETE("/:id/parties/:partyId", cC.HandleRemoveContractParty)
+
+	contractsRouter.POST("/:id/sign", cC.HandleSignContract)
 
 	router.Any("/*", func(c echo.Context) error {
 		return c.JSON(404, map[string]any{

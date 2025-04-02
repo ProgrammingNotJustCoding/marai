@@ -1,0 +1,25 @@
+meta {
+  name: Create Contract
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{BaseUrl}}/contracts
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "title": "Sample Contract",
+    "description": "This is a sample contract description",
+    "content": "Contract content goes here",
+    "lawFirmId": "01JQVMZCM67MRKZCVN1DVT0FR3",
+    "isTemplate": false
+  }
+}

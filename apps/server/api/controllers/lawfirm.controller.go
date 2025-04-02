@@ -119,6 +119,27 @@ func (lc *LawFirmController) HandleCreateLawFirm(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
+	// create default role for the role with perm perm_firm_admin and a default membership to owner with that role
+	role := &schema.LawFirmRole{
+		LawFirmID:     lawFirm.ID,
+		Name:          "Admin",
+		PermRead:      true,
+		PermWrite:     true,
+		PermManage:    true,
+		PermFirmAdmin: true,
+	}
+	if err := lc.lawFirmRepo.CreateRole(c.Request().Context(), role); err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	membership := &schema.LawFirmMembership{
+		UserID:    userID,
+		LawFirmID: lawFirm.ID,
+		RoleID:    role.ID,
+	}
+	if err := lc.lawFirmRepo.CreateMembership(c.Request().Context(), membership); err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
 	return c.JSON(http.StatusCreated, constants.Response{
 		Status:        http.StatusCreated,
 		Message:       "Law firm created successfully",
@@ -186,7 +207,6 @@ func (lc *LawFirmController) HandleUpdateLawFirm(c echo.Context) error {
 		lawFirm.Email = req.Email
 	}
 
-	// Update the new fields
 	if req.PublicContact != "" {
 		lawFirm.PublicContact = req.PublicContact
 	}

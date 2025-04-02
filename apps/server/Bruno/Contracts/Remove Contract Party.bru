@@ -1,0 +1,15 @@
+meta {
+  name: Remove Contract Party
+  type: http
+  seq: 8
+}
+
+delete {
+  url: {{BaseUrl}}/contracts/{{contractId}}/parties/{{partyId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
