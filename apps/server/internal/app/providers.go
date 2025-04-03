@@ -8,8 +8,8 @@ import (
 	"marai/internal/database/repositories"
 	"time"
 
-	"github.com/labstack/echo/v4"
-	"github.com/minio/minio-go/v7"
+	echo "github.com/labstack/echo/v4"
+	minio "github.com/minio/minio-go/v7"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )

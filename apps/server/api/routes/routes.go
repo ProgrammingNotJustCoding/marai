@@ -5,7 +5,7 @@ import (
 	"marai/api/middlewares"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 )
 
 func SetupRoutes(router *echo.Group,
@@ -15,7 +15,6 @@ func SetupRoutes(router *echo.Group,
 	cC *controllers.ContractsController,
 	startTime time.Time,
 ) {
-
 	router.GET("/health", func(c echo.Context) error {
 		return c.JSON(200, map[string]any{
 			"status":        200,
@@ -59,9 +58,9 @@ func SetupRoutes(router *echo.Group,
 	lawFirmRouter.POST("/:id/roles/promote", lC.HandlePromoteRoleToAdmin, mW.RequireLawFirmOwnership())
 	lawFirmRouter.POST("/:id/roles/demote", lC.HandleDemoteRoleFromAdmin, mW.RequireLawFirmOwnership())
 
-	// TODO: Make usefull user routes later - like reset pwd, current cases, etc... etc...
+	// TODO: Make useful user routes later - like reset pwd, current cases, etc... etc...
 
-	// TODO: Make usefull admin routes later
+	// TODO: Make useful admin routes later
 
 	// TODO Contracts routes
 	contractsRouter := router.Group("/contracts")

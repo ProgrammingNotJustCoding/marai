@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"fmt"
-	"log/slog"
 	"marai/api/constants"
 	"marai/internal/config"
 	"marai/internal/database/repositories"
@@ -10,7 +9,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 	m "github.com/labstack/echo/v4/middleware"
 )
 
@@ -48,7 +47,6 @@ func (mw *Middlewares) SetupMiddlewares(app *echo.Echo) {
 func (mw *Middlewares) AuthMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
-
 			sessionID, err := c.Cookie("sessionID")
 			if err != nil {
 				c.Logger().Warn("pre Skill issue")
@@ -57,9 +55,6 @@ func (mw *Middlewares) AuthMiddleware() echo.MiddlewareFunc {
 			}
 
 			session, err := mw.sessionRepo.GetSessionByToken(c.Request().Context(), sessionID.Value)
-
-			slog.Info("Session ID", slog.String("sessionID", sessionID.Value))
-			slog.Info("Session", slog.Any("session", session))
 			if err != nil {
 				c.Logger().Warn("Skill issue")
 				return c.JSON(http.StatusUnauthorized, constants.ErrUnauthorized)

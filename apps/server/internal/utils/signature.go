@@ -14,7 +14,6 @@ import (
 )
 
 func GenerateSignatureKeyPair() (privateKeyPEM string, publicKeyPEM string, err error) {
-
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		return "", "", err
@@ -42,7 +41,6 @@ func GenerateSignatureKeyPair() (privateKeyPEM string, publicKeyPEM string, err 
 }
 
 func SignData(privateKeyPEM string, data []byte) (string, error) {
-
 	block, _ := pem.Decode([]byte(privateKeyPEM))
 	if block == nil {
 		return "", errors.New("failed to parse PEM block containing the private key")
@@ -67,7 +65,6 @@ func SignData(privateKeyPEM string, data []byte) (string, error) {
 }
 
 func VerifySignature(publicKeyPEM string, data []byte, signatureBase64 string) (bool, error) {
-
 	block, _ := pem.Decode([]byte(publicKeyPEM))
 	if block == nil {
 		return false, errors.New("failed to parse PEM block containing the public key")

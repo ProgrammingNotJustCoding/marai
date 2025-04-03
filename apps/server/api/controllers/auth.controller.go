@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/twilio/twilio-go"
+	twilio "github.com/twilio/twilio-go"
 	verify "github.com/twilio/twilio-go/rest/verify/v2"
 )
 

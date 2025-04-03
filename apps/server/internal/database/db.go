@@ -3,13 +3,12 @@ package database
 import (
 	"context"
 	"log/slog"
-	"time"
-
 	"marai/internal/config"
 	"marai/internal/database/schema"
 	"marai/internal/utils"
+	"time"
 
-	"github.com/minio/minio-go/v7"
+	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -71,7 +70,6 @@ func NewMinioDB() *minio.Client {
 		Secure: SSLPolicy,
 		Region: "",
 	})
-
 	if err != nil {
 		slog.Error("Error creating MinIO client", slog.String("error", err.Error()))
 		return nil

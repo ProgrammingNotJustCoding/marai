@@ -9,23 +9,7 @@ import (
 	"io"
 )
 
-func GenerateEncryptionKey() (string, error) {
-	key := make([]byte, 32)
-	if _, err := io.ReadFull(rand.Reader, key); err != nil {
-		return "", err
-	}
-	return string(key), nil
-}
-
-func DeriveKeyFromPassword(password string, salt []byte) []byte {
-	hash := sha256.New()
-	hash.Write([]byte(password))
-	hash.Write(salt)
-	return hash.Sum(nil)
-}
-
 func EncryptData(data []byte, keyString string) ([]byte, error) {
-
 	key := deriveKey(keyString, 32)
 
 	block, err := aes.NewCipher(key)
@@ -49,7 +33,6 @@ func EncryptData(data []byte, keyString string) ([]byte, error) {
 }
 
 func DecryptData(encryptedData []byte, keyString string) ([]byte, error) {
-
 	key := deriveKey(keyString, 32)
 
 	block, err := aes.NewCipher(key)

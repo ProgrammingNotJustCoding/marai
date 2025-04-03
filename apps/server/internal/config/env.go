@@ -24,6 +24,7 @@ var env = map[string]interface{}{
 	"MINIO_SSL_POLICY":         "false",
 	"MINIO_BUCKET_NAME":        "marai",
 	"MINIO_ENDPOINT":           "localhost:9000",
+	"ENCRYPTION_MASTER_KEY":    "NotSoSecretKey-ChangeMe-Please",
 }
 
 func GetEnv(key string, fallback ...string) string {

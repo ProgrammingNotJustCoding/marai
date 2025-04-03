@@ -11,9 +11,9 @@ import (
 	"mime/multipart"
 	"time"
 
-	"github.com/minio/minio-go/v7"
+	minio "github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/encrypt"
-	"github.com/oklog/ulid/v2"
+	ulid "github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
 
@@ -148,14 +148,17 @@ func (r *ContractsRepo) SoftDeleteContract(ctx context.Context, id string) error
 }
 
 func (r *ContractsRepo) UploadContractFile(ctx context.Context, file *multipart.FileHeader, contractID string) (string, string, error) {
-
 	objectName := fmt.Sprintf("contracts/%s/%s", contractID, file.Filename)
 
 	src, err := file.Open()
 	if err != nil {
 		return "", "", err
 	}
-	defer src.Close()
+	defer func() {
+		if closeErr := src.Close(); closeErr != nil {
+			fmt.Printf("failed to close file: %v", closeErr)
+		}
+	}()
 
 	hasher := sha256.New()
 	if _, err := io.Copy(hasher, src); err != nil {
@@ -163,7 +166,9 @@ func (r *ContractsRepo) UploadContractFile(ctx context.Context, file *multipart.
 	}
 	fileHash := fmt.Sprintf("%x", hasher.Sum(nil))
 
-	src.Seek(0, 0)
+	if _, err := src.Seek(0, 0); err != nil {
+		return "", "", err
+	}
 
 	_, err = r.minioClient.PutObject(ctx, r.bucketName, objectName, src, file.Size, minio.PutObjectOptions{
 		ContentType:          file.Header.Get("Content-Type"),
@@ -185,6 +190,11 @@ func (r *ContractsRepo) GetContractFile(ctx context.Context, contractID, fileNam
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if closeErr := object.Close(); closeErr != nil {
+			fmt.Printf("failed to close object: %v", closeErr)
+		}
+	}()
 
 	return object, nil
 }
@@ -214,7 +224,11 @@ func (r *ContractsRepo) GetEncryptedContractFile(ctx context.Context, contractID
 	if err != nil {
 		return nil, err
 	}
-	defer object.Close()
+	defer func() {
+		if closeErr := object.Close(); closeErr != nil {
+			fmt.Printf("failed to close object: %v", closeErr)
+		}
+	}()
 
 	contentBytes, err := io.ReadAll(object)
 	if err != nil {
@@ -278,7 +292,6 @@ func (r *ContractsRepo) GetContractParties(ctx context.Context, contractID strin
 
 func (r *ContractsRepo) SignContract(ctx context.Context, contractID, partyID, userID, signature, ipAddress, userAgent string) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-
 		if err := tx.Model(&schema.ContractParty{}).
 			Where("id = ? AND contract_id = ?", partyID, contractID).
 			Updates(map[string]any{

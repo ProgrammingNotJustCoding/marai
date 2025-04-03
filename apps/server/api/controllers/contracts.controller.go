@@ -1,9 +1,13 @@
 package controllers
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"marai/api/constants"
+	"marai/internal/config"
 	"marai/internal/database/repositories"
 	"marai/internal/database/schema"
 	"marai/internal/utils"
@@ -12,7 +16,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
+)
+
+const (
+	StatusDraft            = "draft"
+	StatusPendingSignature = "pending_signature"
+	StatusVoid             = "void"
 )
 
 type CreateContractRequest struct {
@@ -85,7 +95,7 @@ func (cc *ContractsController) HandleCreateContract(c echo.Context) error {
 		LawFirmID:   req.LawFirmID,
 		CreatorID:   userID,
 		IsTemplate:  req.IsTemplate,
-		Status:      "draft",
+		Status:      StatusDraft,
 		ExpiresAt:   req.ExpiresAt,
 	}
 
@@ -241,12 +251,12 @@ func (cc *ContractsController) HandleUpdateContract(c echo.Context) error {
 		validStatusTransition := false
 
 		switch contract.Status {
-		case "draft":
-			validStatusTransition = req.Status == "pending_signature" || req.Status == "void"
-		case "pending_signature":
-			validStatusTransition = req.Status == "void"
+		case StatusDraft:
+			validStatusTransition = req.Status == StatusPendingSignature || req.Status == StatusVoid
+		case StatusPendingSignature:
+			validStatusTransition = req.Status == StatusVoid
 		case "signed":
-			validStatusTransition = req.Status == "void"
+			validStatusTransition = req.Status == StatusVoid
 		}
 
 		if !validStatusTransition {
@@ -316,7 +326,7 @@ func (cc *ContractsController) HandleDeleteContract(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
 	}
 
-	if contract.Status != "draft" && contract.Status != "void" {
+	if contract.Status != StatusDraft && contract.Status != StatusVoid {
 		return c.JSON(http.StatusBadRequest, constants.Error{
 			Status:        http.StatusBadRequest,
 			Message:       "Cannot Delete Active Contract",
@@ -368,14 +378,27 @@ func (cc *ContractsController) HandleUploadContractFile(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
-	defer src.Close()
+	defer func() {
+		if closeErr := src.Close(); closeErr != nil {
+			c.Logger().Errorf("failed to close file: %v", closeErr)
+		}
+	}()
 
 	fileContent, err := io.ReadAll(src)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	encryptionKey := "your-encryption-key" // Replace with a secure key management solution
+	encryptionKey, err := cc.getContractEncryptionKey(contractID)
+	if err != nil {
+		c.Logger().Error("Error getting encryption key: ", err)
+		return c.JSON(http.StatusInternalServerError, constants.Error{
+			Status:        http.StatusInternalServerError,
+			Message:       "Encryption Failed",
+			PrettyMessage: "There was an error preparing encryption",
+		})
+	}
+
 	encryptedContent, err := utils.EncryptData(fileContent, encryptionKey)
 	if err != nil {
 		c.Logger().Error("Error encrypting file: ", err)
@@ -404,7 +427,7 @@ func (cc *ContractsController) HandleUploadContractFile(c echo.Context) error {
 		contract.Parties[i].HasSigned = false
 		contract.Parties[i].SignedAt = nil
 	}
-	contract.Status = "draft"
+	contract.Status = StatusDraft
 	// TODO: Notify parties about the new file uploaded
 
 	if err := cc.contracts.UpdateContract(c.Request().Context(), contract); err != nil {
@@ -465,7 +488,6 @@ func (cc *ContractsController) HandleGetContractFile(c echo.Context) error {
 		}
 	}
 
-	// Retrieve the encrypted file
 	encryptedContent, err := cc.contracts.GetEncryptedContractFile(c.Request().Context(), contractID, fileName)
 	if err != nil {
 		c.Logger().Error("Error retrieving file: ", err)
@@ -476,8 +498,16 @@ func (cc *ContractsController) HandleGetContractFile(c echo.Context) error {
 		})
 	}
 
-	// Decrypt the file content
-	encryptionKey := "your-encryption-key" // Replace with a secure key management solution
+	encryptionKey, err := cc.getContractEncryptionKey(contractID)
+	if err != nil {
+		c.Logger().Error("Error getting encryption key: ", err)
+		return c.JSON(http.StatusInternalServerError, constants.Error{
+			Status:        http.StatusInternalServerError,
+			Message:       "Decryption Failed",
+			PrettyMessage: "There was an error preparing decryption",
+		})
+	}
+
 	decryptedContent, err := utils.DecryptData(encryptedContent, encryptionKey)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.Error{
@@ -527,7 +557,7 @@ func (cc *ContractsController) HandleAddContractParty(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
 	}
 
-	if contract.Status != "draft" {
+	if contract.Status != StatusDraft {
 		return c.JSON(http.StatusBadRequest, constants.Error{
 			Status:        http.StatusBadRequest,
 			Message:       "Cannot Modify Contract",
@@ -585,7 +615,7 @@ func (cc *ContractsController) HandleRemoveContractParty(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
 	}
 
-	if contract.Status != "draft" {
+	if contract.Status != StatusDraft {
 		return c.JSON(http.StatusBadRequest, constants.Error{
 			Status:        http.StatusBadRequest,
 			Message:       "Cannot Modify Contract",
@@ -637,7 +667,7 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
 	}
 
-	if contract.Status != "pending_signature" {
+	if contract.Status != StatusPendingSignature {
 		return c.JSON(http.StatusBadRequest, constants.Error{
 			Status:        http.StatusBadRequest,
 			Message:       "Invalid Contract Status",
@@ -692,4 +722,17 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 		PrettyMessage: "You have successfully signed the contract",
 		Data:          updatedContract,
 	})
+}
+
+func (cc *ContractsController) getContractEncryptionKey(contractID string) (string, error) {
+	masterKey := config.GetEnv("ENCRYPTION_MASTER_KEY")
+	if masterKey == "" {
+		return "", fmt.Errorf("master encryption key not configured")
+	}
+
+	h := hmac.New(sha256.New, []byte(masterKey))
+	h.Write([]byte(contractID))
+	derivedKey := hex.EncodeToString(h.Sum(nil))
+
+	return derivedKey, nil
 }
