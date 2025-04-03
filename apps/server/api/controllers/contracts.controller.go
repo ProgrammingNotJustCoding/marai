@@ -662,16 +662,14 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
-
 	if contract == nil {
 		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
 	}
-
 	if contract.Status != StatusPendingSignature {
 		return c.JSON(http.StatusBadRequest, constants.Error{
 			Status:        http.StatusBadRequest,
 			Message:       "Invalid Contract Status",
-			PrettyMessage: "The contract is not ready for signatures",
+			PrettyMessage: "The contract is not ready for signatures. `pending_signature` status is required.",
 		})
 	}
 
@@ -682,7 +680,6 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 			break
 		}
 	}
-
 	if foundParty == nil {
 		return c.JSON(http.StatusForbidden, constants.Error{
 			Status:        http.StatusForbidden,
@@ -690,7 +687,6 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 			PrettyMessage: "You are not authorized to sign this contract",
 		})
 	}
-
 	if foundParty.HasSigned {
 		return c.JSON(http.StatusBadRequest, constants.Error{
 			Status:        http.StatusBadRequest,
@@ -699,15 +695,68 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 		})
 	}
 
+	// Retrieve the file content
+	fileName := strings.TrimPrefix(contract.FilePath, fmt.Sprintf("contracts/%s/", contractID))
+	fileContent, err := cc.contracts.GetEncryptedContractFile(c.Request().Context(), contractID, fileName)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	// Decrypt the file content
+	encryptionKey, err := cc.getContractEncryptionKey(contractID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	decryptedContent, err := utils.DecryptData(fileContent, encryptionKey)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	// Sign the file content
+	privateKey := config.GetEnv("SIGNING_PRIVATE_KEY")
+	signature, err := utils.SignData(privateKey, decryptedContent)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	// Append the signature to the file content
+	signedContent := append(decryptedContent, []byte("\n---SIGNATURE---\n"+signature)...)
+
+	// Encrypt the signed content
+	encryptedSignedContent, err := utils.EncryptData(signedContent, encryptionKey)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	// Upload the signed file to MinIO
+	fileURL, fileHash, err := cc.contracts.UploadEncryptedContractFileWithMetadata(
+		c.Request().Context(),
+		string(encryptedSignedContent),
+		contractID,
+		fileName,
+		map[string]string{"fileGenType": "signing"},
+	)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	// Update the signing status in the database
 	if err := cc.contracts.SignContract(
 		c.Request().Context(),
 		contractID,
 		foundParty.ID,
 		userID,
-		req.Signature,
+		signature,
 		c.RealIP(),
 		c.Request().UserAgent(),
 	); err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	// Update the contract with the new file details
+	contract.FileURL = fileURL
+	contract.FileHash = fileHash
+	if err := cc.contracts.UpdateContract(c.Request().Context(), contract); err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
@@ -722,6 +771,129 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 		PrettyMessage: "You have successfully signed the contract",
 		Data:          updatedContract,
 	})
+}
+
+func (cc *ContractsController) HandleListContractFileVersions(c echo.Context) error {
+	contractID := c.Param("id")
+	userID := c.Get("userID").(string)
+
+	contract, err := cc.contracts.GetContractByID(c.Request().Context(), contractID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	if contract == nil {
+		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
+	}
+
+	hasPermission, err := cc.lawFirmRepo.HasPermission(c.Request().Context(), userID, contract.LawFirmID, "read")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	isParty := false
+	for _, party := range contract.Parties {
+		if party.UserID == userID {
+			isParty = true
+			break
+		}
+	}
+
+	if !hasPermission && !isOwner && !isParty {
+		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
+	}
+
+	versions, err := cc.contracts.ListContractFileVersions(c.Request().Context(), contractID)
+	if err != nil {
+		c.Logger().Error("Error retrieving file versions: ", err)
+		return c.JSON(http.StatusInternalServerError, constants.Error{
+			Status:  http.StatusInternalServerError,
+			Message: "File Versions Retrieval Failed",
+		})
+	}
+
+	return c.JSON(http.StatusOK, constants.Response{
+		Status:  http.StatusOK,
+		Message: "File versions retrieved successfully",
+		Data:    versions,
+	})
+}
+
+func (cc *ContractsController) HandleGetContractFileVersion(c echo.Context) error {
+	contractID := c.Param("id")
+	versionID := c.Param("version")
+	userID := c.Get("userID").(string)
+
+	contract, err := cc.contracts.GetContractByID(c.Request().Context(), contractID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	if contract == nil {
+		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
+	}
+
+	hasPermission, err := cc.lawFirmRepo.HasPermission(c.Request().Context(), userID, contract.LawFirmID, "read")
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	isParty := false
+	for _, party := range contract.Parties {
+		if party.UserID == userID {
+			isParty = true
+			break
+		}
+	}
+
+	if !hasPermission && !isOwner && !isParty {
+		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
+	}
+
+	encryptedContent, fileName, err := cc.contracts.GetContractFileVersion(c.Request().Context(), contractID, versionID)
+	if err != nil {
+		c.Logger().Error("Error retrieving file version: ", err)
+		return c.JSON(http.StatusInternalServerError, constants.Error{
+			Status:        http.StatusInternalServerError,
+			Message:       "File Version Retrieval Failed",
+			PrettyMessage: "There was an error retrieving the file version",
+		})
+	}
+
+	encryptionKey, err := cc.getContractEncryptionKey(contractID)
+	if err != nil {
+		c.Logger().Error("Error getting encryption key: ", err)
+		return c.JSON(http.StatusInternalServerError, constants.Error{
+			Status:        http.StatusInternalServerError,
+			Message:       "Decryption Failed",
+			PrettyMessage: "There was an error preparing decryption",
+		})
+	}
+
+	decryptedContent, err := utils.DecryptData(encryptedContent, encryptionKey)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.Error{
+			Status:        http.StatusInternalServerError,
+			Message:       "Decryption Failed",
+			PrettyMessage: "There was an error decrypting the file",
+		})
+	}
+
+	c.Response().Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", fileName))
+	c.Response().Header().Set("Content-Type", "application/octet-stream")
+	c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", len(decryptedContent)))
+
+	c.Response().WriteHeader(http.StatusOK)
+	_, err = c.Response().Write(decryptedContent)
+	return err
 }
 
 func (cc *ContractsController) getContractEncryptionKey(contractID string) (string, error) {

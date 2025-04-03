@@ -9,6 +9,7 @@ import (
 	"io"
 	"marai/internal/database/schema"
 	"mime/multipart"
+	"strings"
 	"time"
 
 	minio "github.com/minio/minio-go/v7"
@@ -16,6 +17,15 @@ import (
 	ulid "github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
+
+type FileVersion struct {
+	VersionID   string    `json:"versionId"`
+	FileName    string    `json:"fileName"`
+	FileHash    string    `json:"fileHash"`
+	FileGenType string    `json:"fileGenType"`
+	UploadedAt  time.Time `json:"uploadedAt"`
+	FileSize    int64     `json:"fileSize"`
+}
 
 type ContractsRepo struct {
 	db          *gorm.DB
@@ -218,6 +228,32 @@ func (r *ContractsRepo) UploadEncryptedContractFile(ctx context.Context, encrypt
 	return fileURL, fileHash, nil
 }
 
+func (r *ContractsRepo) UploadEncryptedContractFileWithMetadata(ctx context.Context, encryptedContent string, contractID string, fileName string, metadata map[string]string) (string, string, error) {
+	objectName := fmt.Sprintf("contracts/%s/%s", contractID, fileName)
+	contentBytes := []byte(encryptedContent)
+	hasher := sha256.New()
+	hasher.Write(contentBytes)
+	fileHash := fmt.Sprintf("%x", hasher.Sum(nil))
+
+	// Convert metadata to MinIO format
+	minioMetadata := make(map[string]string)
+	for key, value := range metadata {
+		minioMetadata["X-Amz-Meta-"+key] = value
+	}
+
+	_, err := r.minioClient.PutObject(ctx, r.bucketName, objectName,
+		bytes.NewReader(contentBytes), int64(len(contentBytes)), minio.PutObjectOptions{
+			ContentType:  "application/octet-stream",
+			UserMetadata: minioMetadata,
+		})
+	if err != nil {
+		return "", "", err
+	}
+
+	fileURL := fmt.Sprintf("/api/contracts/%s/file", contractID)
+	return fileURL, fileHash, nil
+}
+
 func (r *ContractsRepo) GetEncryptedContractFile(ctx context.Context, contractID string, fileName string) ([]byte, error) {
 	objectName := fmt.Sprintf("contracts/%s/%s", contractID, fileName)
 	object, err := r.minioClient.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{})
@@ -334,4 +370,102 @@ func (r *ContractsRepo) SignContract(ctx context.Context, contractID, partyID, u
 
 		return nil
 	})
+}
+
+// ListContractFileVersions lists all versions of a contract file
+func (r *ContractsRepo) ListContractFileVersions(ctx context.Context, contractID string) ([]FileVersion, error) {
+	objectsPrefix := fmt.Sprintf("contracts/%s/", contractID)
+
+	opts := minio.ListObjectsOptions{
+		Prefix:       objectsPrefix,
+		Recursive:    true,
+		WithVersions: true,
+	}
+
+	var versions []FileVersion
+
+	// Get all objects
+	for object := range r.minioClient.ListObjects(ctx, r.bucketName, opts) {
+		if object.Err != nil {
+			return nil, object.Err
+		}
+
+		// Get object info to retrieve metadata
+		objInfo, err := r.minioClient.StatObject(ctx, r.bucketName, object.Key, minio.StatObjectOptions{})
+		if err != nil {
+			continue // Skip if we can't get info
+		}
+
+		objVerType := objInfo.Metadata.Get("fileGenType")
+		if objVerType == "" {
+			objVerType = "Regular"
+		}
+		// Create file version object
+		version := FileVersion{
+			VersionID:   objInfo.VersionID,
+			FileName:    strings.TrimPrefix(object.Key, objectsPrefix),
+			FileHash:    objInfo.ETag,
+			UploadedAt:  objInfo.LastModified,
+			FileSize:    objInfo.Size,
+			FileGenType: objVerType, // TODO: if its a signing version, or a user upload version
+		}
+
+		versions = append(versions, version)
+	}
+
+	return versions, nil
+}
+
+// GetContractFileVersion gets a specific version of a contract file
+func (r *ContractsRepo) GetContractFileVersion(ctx context.Context, contractID string, versionID string) ([]byte, string, error) {
+	// First, list objects to find the file with this version ID
+	opts := minio.ListObjectsOptions{
+		Prefix:    fmt.Sprintf("contracts/%s/", contractID),
+		Recursive: true,
+	}
+
+	var objectName string
+	var fileName string
+
+	for object := range r.minioClient.ListObjects(ctx, r.bucketName, opts) {
+		if object.Err != nil {
+			return nil, "", object.Err
+		}
+
+		// Get object with version info
+		objInfo, err := r.minioClient.StatObject(ctx, r.bucketName, object.Key, minio.StatObjectOptions{})
+		if err != nil {
+			continue
+		}
+
+		if objInfo.VersionID == versionID {
+			objectName = object.Key
+			fileName = strings.TrimPrefix(object.Key, fmt.Sprintf("contracts/%s/", contractID))
+			break
+		}
+	}
+
+	if objectName == "" {
+		return nil, "", fmt.Errorf("version not found")
+	}
+
+	// Get the specific version
+	object, err := r.minioClient.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{
+		VersionID: versionID,
+	})
+	if err != nil {
+		return nil, "", err
+	}
+	defer func() {
+		if closeErr := object.Close(); closeErr != nil {
+			fmt.Printf("failed to close object: %v", closeErr)
+		}
+	}()
+
+	contentBytes, err := io.ReadAll(object)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return contentBytes, fileName, nil
 }

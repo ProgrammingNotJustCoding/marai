@@ -2,7 +2,6 @@ package utils
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
@@ -12,33 +11,6 @@ import (
 	"fmt"
 	"math/big"
 )
-
-func GenerateSignatureKeyPair() (privateKeyPEM string, publicKeyPEM string, err error) {
-	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		return "", "", err
-	}
-
-	x509PrivateKey, err := x509.MarshalECPrivateKey(privateKey)
-	if err != nil {
-		return "", "", err
-	}
-	privateKeyPEM = string(pem.EncodeToMemory(&pem.Block{
-		Type:  "EC PRIVATE KEY",
-		Bytes: x509PrivateKey,
-	}))
-
-	x509PublicKey, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
-	if err != nil {
-		return "", "", err
-	}
-	publicKeyPEM = string(pem.EncodeToMemory(&pem.Block{
-		Type:  "PUBLIC KEY",
-		Bytes: x509PublicKey,
-	}))
-
-	return privateKeyPEM, publicKeyPEM, nil
-}
 
 func SignData(privateKeyPEM string, data []byte) (string, error) {
 	block, _ := pem.Decode([]byte(privateKeyPEM))

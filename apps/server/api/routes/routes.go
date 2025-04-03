@@ -30,6 +30,7 @@ func SetupRoutes(router *echo.Group,
 
 	authRouter.POST("/user/signin/otp", aC.HandleSigninOTP)
 	authRouter.POST("/user/signin/otp/verify", aC.HandleSigninOTPVerify)
+	// TODO: below func is redundant, remove it later
 	authRouter.POST("/user/signin/otp/resend", aC.HandleSigninOTPResend)
 	authRouter.POST("/user/signin/password", aC.HandleSigninPassword)
 	authRouter.GET("/user/public", aC.HandleGetPublicUsersByUsername)
@@ -67,13 +68,16 @@ func SetupRoutes(router *echo.Group,
 	contractsRouter.Use(mW.AuthMiddleware())
 
 	contractsRouter.POST("", cC.HandleCreateContract)
-	contractsRouter.GET("/law-firm/:lawFirmId", cC.HandleListContracts)
+	contractsRouter.GET("/lawfirms/:lawFirmId", cC.HandleListContracts)
 	contractsRouter.GET("/:id", cC.HandleGetContract)
 	contractsRouter.PUT("/:id", cC.HandleUpdateContract)
 	contractsRouter.DELETE("/:id", cC.HandleDeleteContract)
 
 	contractsRouter.POST("/:id/file", cC.HandleUploadContractFile)
 	contractsRouter.GET("/:id/file", cC.HandleGetContractFile)
+
+	contractsRouter.GET("/:id/file/versions", cC.HandleListContractFileVersions)
+	contractsRouter.GET("/:id/file/versions/:version", cC.HandleGetContractFileVersion)
 
 	contractsRouter.POST("/:id/parties", cC.HandleAddContractParty)
 	contractsRouter.DELETE("/:id/parties/:partyId", cC.HandleRemoveContractParty)

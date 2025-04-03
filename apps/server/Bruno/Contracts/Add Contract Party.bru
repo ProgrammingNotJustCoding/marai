@@ -1,11 +1,11 @@
 meta {
   name: Add Contract Party
   type: http
-  seq: 7
+  seq: 8
 }
 
 post {
-  url: {{BaseUrl}}/contracts/{{contractId}}/parties
+  url: {{BaseUrl}}/contracts/01JQVN08KJRM0RSSSX8GPRE6T3/parties
   body: json
   auth: none
 }
@@ -16,10 +16,8 @@ headers {
 
 body:json {
   {
-    "userId": "01JNXYZ123456789ABCDEF",
-    "name": "John Doe",
-    "email": "john.doe@example.com",
-    "mobile": "+1234567890",
+    "userId": "01JQVJ7JWFHMA65S790K2A7D6X",
+    "name": "Harsh N Patel",
     "role": "Signatory"
   }
 }
