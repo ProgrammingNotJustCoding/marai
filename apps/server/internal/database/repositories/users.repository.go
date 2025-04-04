@@ -14,6 +14,13 @@ type UserRepo struct {
 	db *gorm.DB
 }
 
+type UserPublicKey struct {
+	ID        string `gorm:"primaryKey"`
+	UserID    string
+	Key       string
+	CreatedAt time.Time
+}
+
 func NewUserRepository(db *gorm.DB) *UserRepo {
 	return &UserRepo{db: db}
 }
@@ -171,10 +178,10 @@ func (r *UserRepo) HardDeleteUser(ctx context.Context, id int) error {
 
 func (r *UserRepo) AddPublicKey(ctx context.Context, userID string, key string) (string, error) {
 	publicKey := &schema.UserPublicKey{
-		ID:      ulid.Make().String(),
-		UserID:  userID,
-		Key:     key,
-		Created: time.Now(),
+		ID:        ulid.Make().String(),
+		UserID:    userID,
+		Key:       key,
+		CreatedAt: time.Now(),
 	}
 	err := r.db.WithContext(ctx).Create(publicKey).Error
 	return publicKey.ID, err
@@ -199,7 +206,7 @@ func (r *UserRepo) GetPublicKeys(ctx context.Context, userID string) ([]map[stri
 		result = append(result, map[string]string{
 			"id":      key.ID,
 			"key":     key.Key,
-			"created": key.Created.Format(time.RFC3339),
+			"created": key.CreatedAt.Format(time.RFC3339),
 		})
 	}
 	return result, nil

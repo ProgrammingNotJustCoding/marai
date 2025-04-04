@@ -30,7 +30,7 @@ type UserPublicKey struct {
 	Key           string    `json:"key" gorm:"type:text"`
 	Name          string    `json:"name" gorm:"type:varchar(255)"`
 	HasDownloaded bool      `json:"hasDownloaded" gorm:"default:false"`
-	Created       time.Time `json:"created" gorm:"autoCreateTime"`
+	CreatedAt     time.Time `json:"createdAt" gorm:"autoCreateTime"`
 }
 
 func (UserPublicKey) TableName() string {
