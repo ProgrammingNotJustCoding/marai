@@ -52,6 +52,7 @@ func Setup(app *App) {
 		app.AuthController,
 		app.LawfirmController,
 		app.ContractController,
+		app.KeysController,
 		app.StartTime,
 	)
 }

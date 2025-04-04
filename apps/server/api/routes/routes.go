@@ -13,6 +13,7 @@ func SetupRoutes(router *echo.Group,
 	aC *controllers.AuthController,
 	lC *controllers.LawFirmController,
 	cC *controllers.ContractsController,
+	kC *controllers.KeysController,
 	startTime time.Time,
 ) {
 	router.GET("/health", func(c echo.Context) error {
@@ -34,6 +35,13 @@ func SetupRoutes(router *echo.Group,
 	authRouter.POST("/user/signin/otp/resend", aC.HandleSigninOTPResend)
 	authRouter.POST("/user/signin/password", aC.HandleSigninPassword)
 	authRouter.GET("/user/public", aC.HandleGetPublicUsersByUsername)
+
+	// Keys routes
+	userGroup := router.Group("/keys")
+	userGroup.Use(mW.AuthMiddleware())
+	userGroup.GET("", kC.HandleListPublicKeys)
+	userGroup.POST("/generate", kC.HandleGenerateKeyPair)          // New endpoint
+	userGroup.GET("/download/:keyId", kC.HandleDownloadPrivateKey) // New endpoint
 
 	lawFirmRouter := router.Group("/lawfirms")
 	lawFirmRouter.Use(mW.AuthMiddleware())

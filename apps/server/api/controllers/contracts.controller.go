@@ -393,7 +393,7 @@ func (cc *ContractsController) HandleUploadContractFile(c echo.Context) error {
 	if err != nil {
 		c.Logger().Error("Error getting encryption key: ", err)
 		return c.JSON(http.StatusInternalServerError, constants.Error{
-			Status:        http.StatusInternalServerError,
+			Status:        constants.ErrInternalServer.Status,
 			Message:       "Encryption Failed",
 			PrettyMessage: "There was an error preparing encryption",
 		})
@@ -403,7 +403,7 @@ func (cc *ContractsController) HandleUploadContractFile(c echo.Context) error {
 	if err != nil {
 		c.Logger().Error("Error encrypting file: ", err)
 		return c.JSON(http.StatusInternalServerError, constants.Error{
-			Status:        http.StatusInternalServerError,
+			Status:        constants.ErrInternalServer.Status,
 			Message:       "Encryption Failed",
 			PrettyMessage: "There was an error encrypting the file",
 		})
@@ -413,7 +413,7 @@ func (cc *ContractsController) HandleUploadContractFile(c echo.Context) error {
 	if err != nil {
 		c.Logger().Error("Error uploading file: ", err)
 		return c.JSON(http.StatusInternalServerError, constants.Error{
-			Status:        http.StatusInternalServerError,
+			Status:        constants.ErrInternalServer.Status,
 			Message:       "File Upload Failed",
 			PrettyMessage: "There was an error uploading your file",
 		})
@@ -695,49 +695,41 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 		})
 	}
 
-	// Retrieve the file content
-	fileName := strings.TrimPrefix(contract.FilePath, fmt.Sprintf("contracts/%s/", contractID))
-	fileContent, err := cc.contracts.GetEncryptedContractFile(c.Request().Context(), contractID, fileName)
+	// Validate the signature using the user's public keys
+	userKeys, err := cc.contracts.GetUserPublicKeys(c.Request().Context(), userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	// Decrypt the file content
-	encryptionKey, err := cc.getContractEncryptionKey(contractID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
-	decryptedContent, err := utils.DecryptData(fileContent, encryptionKey)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	isValid := false
+	for _, key := range userKeys {
+		// Ensure the public key is in correct PEM format
+		key = strings.TrimSpace(key)
+		if !strings.HasPrefix(key, "-----BEGIN PUBLIC KEY-----") {
+			key = "-----BEGIN PUBLIC KEY-----\n" + key
+		}
+		if !strings.HasSuffix(key, "-----END PUBLIC KEY-----") {
+			key = key + "\n-----END PUBLIC KEY-----"
+		}
 
-	// Sign the file content
-	privateKey := config.GetEnv("SIGNING_PRIVATE_KEY")
-	signature, err := utils.SignData(privateKey, decryptedContent)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
-
-	// Append the signature to the file content
-	signedContent := append(decryptedContent, []byte("\n---SIGNATURE---\n"+signature)...)
-
-	// Encrypt the signed content
-	encryptedSignedContent, err := utils.EncryptData(signedContent, encryptionKey)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+		// Attempt signature verification
+		valid, verifyErr := utils.VerifySignature(key, []byte(contract.FileHash), req.Signature)
+		if verifyErr != nil {
+			c.Logger().Errorf("Error verifying signature with key: %s, error: %v", key, verifyErr)
+			continue // Try the next key if this one fails
+		}
+		if valid {
+			isValid = true
+			break
+		}
 	}
 
-	// Upload the signed file to MinIO
-	fileURL, fileHash, err := cc.contracts.UploadEncryptedContractFileWithMetadata(
-		c.Request().Context(),
-		string(encryptedSignedContent),
-		contractID,
-		fileName,
-		map[string]string{"fileGenType": "signing"},
-	)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	if !isValid {
+		return c.JSON(http.StatusUnauthorized, constants.Error{
+			Status:        http.StatusUnauthorized,
+			Message:       "Invalid Signature",
+			PrettyMessage: "The provided signature is invalid or no valid keys were found.",
+		})
 	}
 
 	// Update the signing status in the database
@@ -746,17 +738,16 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 		contractID,
 		foundParty.ID,
 		userID,
-		signature,
+		req.Signature,
 		c.RealIP(),
 		c.Request().UserAgent(),
 	); err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	// Update the contract with the new file details
-	contract.FileURL = fileURL
-	contract.FileHash = fileHash
-	if err := cc.contracts.UpdateContract(c.Request().Context(), contract); err != nil {
+	// Mark the party as verified
+	foundParty.HasVerified = true
+	if err := cc.contracts.UpdateContractParty(c.Request().Context(), foundParty); err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 

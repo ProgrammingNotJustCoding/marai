@@ -1,45 +1,81 @@
 package utils
 
 import (
-	"crypto/ecdsa"
+	"crypto"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"math/big"
 )
 
-func SignData(privateKeyPEM string, data []byte) (string, error) {
-	block, _ := pem.Decode([]byte(privateKeyPEM))
-	if block == nil {
-		return "", errors.New("failed to parse PEM block containing the private key")
-	}
-
-	privateKey, err := x509.ParseECPrivateKey(block.Bytes)
+// GenerateKeyPair generates a new RSA key pair with the specified bit size
+// Returns private key PEM, public key PEM, and error
+func GenerateKeyPair(bits int) (string, string, error) {
+	// Generate private key
+	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	hash := sha256.Sum256(data)
+	// Convert private key to PEM format
+	privateKeyBytes := x509.MarshalPKCS1PrivateKey(privateKey)
+	privateKeyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "RSA PRIVATE KEY",
+		Bytes: privateKeyBytes,
+	})
 
-	r, s, err := ecdsa.Sign(rand.Reader, privateKey, hash[:])
+	// Extract public key
+	publicKey := &privateKey.PublicKey
+	publicKeyBytes, err := x509.MarshalPKIXPublicKey(publicKey)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	signature := append(r.Bytes(), s.Bytes()...)
-	signatureBase64 := base64.StdEncoding.EncodeToString(signature)
+	// Convert public key to PEM format
+	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "PUBLIC KEY",
+		Bytes: publicKeyBytes,
+	})
 
-	return signatureBase64, nil
+	return string(privateKeyPEM), string(publicKeyPEM), nil
 }
 
+// SignData signs data using a private key and returns the signature as a base64 string
+func SignData(privateKeyPEM string, data []byte) (string, error) {
+	// Parse private key
+	block, _ := pem.Decode([]byte(privateKeyPEM))
+	if block == nil || block.Type != "RSA PRIVATE KEY" {
+		return "", errors.New("failed to decode PEM block containing private key")
+	}
+
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		return "", err
+	}
+
+	// Hash the data
+	hashed := sha256.Sum256(data)
+
+	// Sign the hashed data
+	signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed[:])
+	if err != nil {
+		return "", err
+	}
+
+	// Encode signature to base64
+	return base64.StdEncoding.EncodeToString(signature), nil
+}
+
+// VerifySignature verifies a signature against data using a public key
 func VerifySignature(publicKeyPEM string, data []byte, signatureBase64 string) (bool, error) {
+	// Parse public key
 	block, _ := pem.Decode([]byte(publicKeyPEM))
-	if block == nil {
-		return false, errors.New("failed to parse PEM block containing the public key")
+	if block == nil || block.Type != "PUBLIC KEY" {
+		return false, errors.New("failed to decode PEM block containing public key")
 	}
 
 	publicKeyInterface, err := x509.ParsePKIXPublicKey(block.Bytes)
@@ -47,27 +83,30 @@ func VerifySignature(publicKeyPEM string, data []byte, signatureBase64 string) (
 		return false, err
 	}
 
-	publicKey, ok := publicKeyInterface.(*ecdsa.PublicKey)
+	publicKey, ok := publicKeyInterface.(*rsa.PublicKey)
 	if !ok {
-		return false, errors.New("not an ECDSA public key")
+		return false, errors.New("not an RSA public key")
 	}
 
+	// Decode signature from base64
 	signature, err := base64.StdEncoding.DecodeString(signatureBase64)
 	if err != nil {
 		return false, err
 	}
 
-	if len(signature) != 64 {
-		return false, fmt.Errorf("invalid signature length: %d", len(signature))
+	// Hash the data
+	hashed := sha256.Sum256(data)
+
+	// Verify the signature
+	err = rsa.VerifyPKCS1v15(publicKey, crypto.SHA256, hashed[:], signature)
+	if err != nil {
+		return false, nil // Signature is invalid, but not an error condition
 	}
-	r := new(big.Int).SetBytes(signature[:32])
-	s := new(big.Int).SetBytes(signature[32:])
 
-	hash := sha256.Sum256(data)
-
-	return ecdsa.Verify(publicKey, hash[:], r, s), nil
+	return true, nil // Signature is valid
 }
 
+// HashFile computes SHA256 hash of data and returns hex string
 func HashFile(data []byte) string {
 	hash := sha256.New()
 	hash.Write(data)

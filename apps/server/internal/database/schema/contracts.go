@@ -30,16 +30,17 @@ type Contract struct {
 }
 
 type ContractParty struct {
-	ID         string     `json:"id" gorm:"primaryKey;type:varchar(36)"`
-	ContractID string     `json:"contractId" gorm:"index;not null"`
-	UserID     string     `json:"userId,omitempty" gorm:"index"`
-	Name       string     `json:"name" gorm:"not null"`
-	Email      string     `json:"email"`
-	Mobile     string     `json:"mobile"`
-	Role       string     `json:"role"`
-	HasSigned  bool       `json:"hasSigned" gorm:"default:false"`
-	SignedAt   *time.Time `json:"signedAt,omitempty"`
-	CreatedAt  time.Time  `json:"createdAt"`
+	ID          string     `json:"id" gorm:"primaryKey;type:varchar(36)"`
+	ContractID  string     `json:"contractId" gorm:"index;not null"`
+	UserID      string     `json:"userId,omitempty" gorm:"index"`
+	Name        string     `json:"name" gorm:"not null"`
+	Email       string     `json:"email"`
+	Mobile      string     `json:"mobile"`
+	Role        string     `json:"role"`
+	HasSigned   bool       `json:"hasSigned" gorm:"default:false"`
+	HasVerified bool       `json:"hasVerified" gorm:"default:false"`
+	SignedAt    *time.Time `json:"signedAt,omitempty"`
+	CreatedAt   time.Time  `json:"createdAt"`
 
 	User     User     `json:"-" gorm:"foreignKey:UserID"`
 	Contract Contract `json:"-" gorm:"foreignKey:ContractID"`

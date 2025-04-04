@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{BaseUrl}}/contracts/{{contractId}}/sign
+  url: {{BaseUrl}}/contracts/01JQVN08KJRM0RSSSX8GPRE6T3/sign
   body: json
   auth: none
 }
@@ -16,6 +16,13 @@ headers {
 
 body:json {
   {
-    "signature": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAZAAAA..."
+    "signature": "s2kjs4ggKP4N5vyYkVEI1cfRBu7pBdaNrJHddkx5cFNARI0sSBsk6Ppkzd9bOIN+9SotkSbjqjcSsEKfVDi+0gKMapQopD8Vdjt3ZBwDVRFaoRXwN9of8wlkBq5Pm+aS/ZfHHWHswbszHQ1K+WjXy0ysqrVSliT/se0gNL2zcSpyMJ677ND+2QHxWAMF4ztcNhMhXdbZh36ShgTYxA3w0IhHA/r9CgFUJVddnMSzG/GPOLlf7IRLz5SPvuFrO29m23ydr0ZNeLyuCNwXNBPn8+WxqOKHNMp2+YA8kbSrIaR53ZkhEuss5SMNh67VIt/tU8gmy4s4L0kSm3dumV6G4g=="
   }
+}
+
+docs {
+  title: "Sign Contract"
+  description: """
+  This endpoint allows a user to sign a contract by providing a digital signature.
+  """
 }

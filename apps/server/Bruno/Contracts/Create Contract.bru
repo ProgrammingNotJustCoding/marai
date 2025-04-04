@@ -4,6 +4,13 @@ meta {
   seq: 1
 }
 
+docs {
+  title: "Create Contract"
+  description: """
+  This endpoint allows the creation of a new contract by providing details such as title, description, content, law firm ID, and whether it is a template.
+  """
+}
+
 post {
   url: {{BaseUrl}}/contracts
   body: json

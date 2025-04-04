@@ -24,6 +24,7 @@ type App struct {
 	AuthController     *controllers.AuthController
 	LawfirmController  *controllers.LawFirmController
 	ContractController *controllers.ContractsController
+	KeysController     *controllers.KeysController
 	RoleCache          *middlewares.RoleCache
 	StartTime          time.Time
 }
@@ -37,6 +38,7 @@ func NewApp(
 	AuthController *controllers.AuthController,
 	LawfirmController *controllers.LawFirmController,
 	ContractController *controllers.ContractsController,
+	KeysController *controllers.KeysController,
 	RoleCache *middlewares.RoleCache,
 ) *App {
 	e := echo.New()
@@ -51,6 +53,7 @@ func NewApp(
 		AuthController:     AuthController,
 		LawfirmController:  LawfirmController,
 		ContractController: ContractController,
+		KeysController:     KeysController,
 		RoleCache:          RoleCache,
 		StartTime:          time.Now(),
 	}
@@ -71,6 +74,7 @@ func NewFxApp() *fx.App {
 				controllers.NewAuthController,
 				controllers.NewLawFirmController,
 				controllers.NewContractsController,
+				controllers.NewKeysController,
 				middlewares.NewRoleCache,
 				middlewares.NewMiddlewares,
 				NewApp,

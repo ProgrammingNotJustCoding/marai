@@ -4,6 +4,13 @@ meta {
   seq: 3
 }
 
+docs {
+  title: "Create Law Firm"
+  description: """
+  This endpoint allows the creation of a new law firm by providing details such as name, address, phone, and email.
+  """
+}
+
 post {
   url: {{BaseUrl}}/lawfirms
   body: json

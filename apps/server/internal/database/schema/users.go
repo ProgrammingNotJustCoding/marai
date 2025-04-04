@@ -23,3 +23,14 @@ type User struct {
 	UpdatedAt   time.Time  `json:"updatedAt,omitzero"`
 	DeletedAt   *time.Time `json:"deletedAt,omitempty"`
 }
+
+type UserPublicKey struct {
+	ID      string    `json:"id" gorm:"primaryKey;type:varchar(26)"`
+	UserID  string    `json:"userId" gorm:"type:varchar(26);index"`
+	Key     string    `json:"key" gorm:"type:text"`
+	Created time.Time `json:"created" gorm:"autoCreateTime"`
+}
+
+func (UserPublicKey) TableName() string {
+	return "user_public_keys"
+}

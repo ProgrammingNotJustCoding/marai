@@ -4,6 +4,13 @@ meta {
   seq: 1
 }
 
+docs {
+  title: "User Signup"
+  description: """
+  This endpoint allows a new user to sign up by providing their username, email, mobile number, and password.
+  """
+}
+
 post {
   url: {{BaseUrl}}/auth/user/signup
   body: json

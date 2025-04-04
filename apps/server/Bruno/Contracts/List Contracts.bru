@@ -4,6 +4,13 @@ meta {
   seq: 3
 }
 
+docs {
+  title: "List Contracts"
+  description: """
+  This endpoint retrieves a list of contracts for a specific law firm, with options for filtering and sorting.
+  """
+}
+
 get {
   url: {{BaseUrl}}/contracts/law-firm/{{lawFirmId}}
   query: {

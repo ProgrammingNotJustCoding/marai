@@ -119,6 +119,7 @@ func (r *ContractsRepo) UpdateContract(ctx context.Context, contract *schema.Con
 		"content":     contract.Content,
 		"file_url":    contract.FileURL,
 		"file_path":   contract.FilePath,
+		"file_hash":   contract.FileHash,
 		"status":      contract.Status,
 		"expires_at":  contract.ExpiresAt,
 		"updated_at":  contract.UpdatedAt,
@@ -468,4 +469,17 @@ func (r *ContractsRepo) GetContractFileVersion(ctx context.Context, contractID s
 	}
 
 	return contentBytes, fileName, nil
+}
+
+func (r *ContractsRepo) GetUserPublicKeys(ctx context.Context, userID string) ([]string, error) {
+	var keys []schema.UserPublicKey
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Find(&keys).Error; err != nil {
+		return nil, err
+	}
+
+	var result []string
+	for _, key := range keys {
+		result = append(result, key.Key)
+	}
+	return result, nil
 }

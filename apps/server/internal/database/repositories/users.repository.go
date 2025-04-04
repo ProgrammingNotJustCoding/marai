@@ -168,3 +168,39 @@ func (r *UserRepo) HardDeleteUser(ctx context.Context, id int) error {
 
 	return nil
 }
+
+func (r *UserRepo) AddPublicKey(ctx context.Context, userID string, key string) (string, error) {
+	publicKey := &schema.UserPublicKey{
+		ID:      ulid.Make().String(),
+		UserID:  userID,
+		Key:     key,
+		Created: time.Now(),
+	}
+	err := r.db.WithContext(ctx).Create(publicKey).Error
+	return publicKey.ID, err
+}
+
+func (r *UserRepo) UserOwnsKey(ctx context.Context, userID string, keyID string) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&schema.UserPublicKey{}).
+		Where("user_id = ? AND id = ?", userID, keyID).
+		Count(&count).Error
+	return count > 0, err
+}
+
+func (r *UserRepo) GetPublicKeys(ctx context.Context, userID string) ([]map[string]string, error) {
+	var keys []schema.UserPublicKey
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userID).Find(&keys).Error; err != nil {
+		return nil, err
+	}
+
+	var result []map[string]string
+	for _, key := range keys {
+		result = append(result, map[string]string{
+			"id":      key.ID,
+			"key":     key.Key,
+			"created": key.Created.Format(time.RFC3339),
+		})
+	}
+	return result, nil
+}

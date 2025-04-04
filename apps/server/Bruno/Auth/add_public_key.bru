@@ -1,0 +1,21 @@
+meta {
+  name: Add Public Key
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseUrl}}/auth/user/me/keys
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "key": "-----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAErRmhtSfC2SL9ZDTn0ZPyWf1s9rsp"
+  }
+}
