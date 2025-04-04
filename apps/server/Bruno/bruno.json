@@ -1,9 +1,0 @@
-{
-  "version": "1",
-  "name": "Marai-api",
-  "type": "collection",
-  "ignore": [
-    "node_modules",
-    ".git"
-  ]
-}
