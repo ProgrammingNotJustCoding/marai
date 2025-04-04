@@ -5,16 +5,17 @@ import (
 	"marai/api/middlewares"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 )
 
 func SetupRoutes(router *echo.Group,
 	mW *middlewares.Middlewares,
 	aC *controllers.AuthController,
 	lC *controllers.LawFirmController,
+	cC *controllers.ContractsController,
+	kC *controllers.KeysController,
 	startTime time.Time,
 ) {
-
 	router.GET("/health", func(c echo.Context) error {
 		return c.JSON(200, map[string]any{
 			"status":        200,
@@ -25,15 +26,24 @@ func SetupRoutes(router *echo.Group,
 	})
 
 	authRouter := router.Group("/auth")
-
 	authRouter.POST("/user/signup", aC.HandleUserSignup)
 	authRouter.POST("/user/signup/verify", aC.HandleUserSignupVerify)
 
 	authRouter.POST("/user/signin/otp", aC.HandleSigninOTP)
 	authRouter.POST("/user/signin/otp/verify", aC.HandleSigninOTPVerify)
+	// TODO: below func is redundant, remove it later
 	authRouter.POST("/user/signin/otp/resend", aC.HandleSigninOTPResend)
 	authRouter.POST("/user/signin/password", aC.HandleSigninPassword)
 	authRouter.GET("/user/public", aC.HandleGetPublicUsersByUsername)
+
+	keysGroup := router.Group("/keys")
+	keysGroup.Use(mW.AuthMiddleware())
+
+	keysGroup.GET("", kC.HandleListPublicKeys)
+	keysGroup.POST("", kC.HandleGenerateKeyPair)
+	keysGroup.PUT("/:keyID", kC.HandleUpdateKey)
+	keysGroup.DELETE("/:keyID", kC.HandleDeleteKey)
+	keysGroup.POST("/:keyID/download", kC.HandleDownloadKey)
 
 	lawFirmRouter := router.Group("/lawfirms")
 	lawFirmRouter.Use(mW.AuthMiddleware())
@@ -59,9 +69,30 @@ func SetupRoutes(router *echo.Group,
 	lawFirmRouter.POST("/:id/roles/promote", lC.HandlePromoteRoleToAdmin, mW.RequireLawFirmOwnership())
 	lawFirmRouter.POST("/:id/roles/demote", lC.HandleDemoteRoleFromAdmin, mW.RequireLawFirmOwnership())
 
-	// TODO: Make usefull user routes later - like reset pwd, current cases, etc... etc...
+	// TODO: Make useful user routes later - like reset pwd, current cases, etc... etc...
 
-	// TODO: Make usefull admin routes later
+	// TODO: Make useful admin routes later
+
+	// TODO Contracts routes
+	contractsRouter := router.Group("/contracts")
+	contractsRouter.Use(mW.AuthMiddleware())
+
+	contractsRouter.POST("", cC.HandleCreateContract)
+	contractsRouter.GET("/lawfirms/:lawFirmId", cC.HandleListContracts)
+	contractsRouter.GET("/:id", cC.HandleGetContract)
+	contractsRouter.PUT("/:id", cC.HandleUpdateContract)
+	contractsRouter.DELETE("/:id", cC.HandleDeleteContract)
+
+	contractsRouter.POST("/:id/file", cC.HandleUploadContractFile)
+	contractsRouter.GET("/:id/file", cC.HandleGetContractFile)
+
+	contractsRouter.GET("/:id/file/versions", cC.HandleListContractFileVersions)
+	contractsRouter.GET("/:id/file/versions/:version", cC.HandleGetContractFileVersion)
+
+	contractsRouter.POST("/:id/parties", cC.HandleAddContractParty)
+	contractsRouter.DELETE("/:id/parties/:partyId", cC.HandleRemoveContractParty)
+
+	contractsRouter.POST("/:id/sign", cC.HandleSignContract)
 
 	router.Any("/*", func(c echo.Context) error {
 		return c.JSON(404, map[string]any{

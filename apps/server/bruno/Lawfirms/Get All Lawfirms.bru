@@ -1,0 +1,22 @@
+meta {
+  name: Get All Lawfirms
+  type: http
+  seq: 1
+}
+
+docs {
+  title: "Get All Law Firms"
+  description: """
+  This endpoint retrieves a list of all law firms.
+  """
+}
+
+get {
+  url: {{BaseUrl}}/lawfirms
+  body: json
+  auth: none
+}
+
+headers {
+  ~Cookie: {{Cookie}}
+}

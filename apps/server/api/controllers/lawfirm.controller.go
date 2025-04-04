@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 )
 
 type CreateLawFirmRequest struct {
@@ -119,6 +119,26 @@ func (lc *LawFirmController) HandleCreateLawFirm(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
+	role := &schema.LawFirmRole{
+		LawFirmID:     lawFirm.ID,
+		Name:          "Admin",
+		PermRead:      true,
+		PermWrite:     true,
+		PermManage:    true,
+		PermFirmAdmin: true,
+	}
+	if err := lc.lawFirmRepo.CreateRole(c.Request().Context(), role); err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	membership := &schema.LawFirmMembership{
+		UserID:    userID,
+		LawFirmID: lawFirm.ID,
+		RoleID:    role.ID,
+	}
+	if err := lc.lawFirmRepo.CreateMembership(c.Request().Context(), membership); err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
 	return c.JSON(http.StatusCreated, constants.Response{
 		Status:        http.StatusCreated,
 		Message:       "Law firm created successfully",
@@ -186,7 +206,6 @@ func (lc *LawFirmController) HandleUpdateLawFirm(c echo.Context) error {
 		lawFirm.Email = req.Email
 	}
 
-	// Update the new fields
 	if req.PublicContact != "" {
 		lawFirm.PublicContact = req.PublicContact
 	}
@@ -265,7 +284,7 @@ func (lc *LawFirmController) HandleCreateRole(c echo.Context) error {
 	})
 }
 
-func (lc *LawFirmController) HandlePromoteRoleToAdmin(c echo.Context) error {
+func (lc *LawFirmController) updateRoleAdminStatus(c echo.Context, promote bool) error {
 	lawFirmID := c.Param("id")
 	req := new(RoleAdminRequest)
 	if err := c.Bind(req); err != nil {
@@ -288,53 +307,32 @@ func (lc *LawFirmController) HandlePromoteRoleToAdmin(c echo.Context) error {
 		})
 	}
 
-	role.PermFirmAdmin = true
+	role.PermFirmAdmin = promote
 	if err := lc.lawFirmRepo.UpdateRole(c.Request().Context(), role); err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
+	message := "Role demoted from admin successfully"
+	prettyMessage := "The role no longer has admin permissions"
+	if promote {
+		message = "Role promoted to admin successfully"
+		prettyMessage = "The role has been promoted to admin"
+	}
+
 	return c.JSON(http.StatusOK, constants.Response{
 		Status:        http.StatusOK,
-		Message:       "Role promoted to admin successfully",
-		PrettyMessage: "The role has been promoted to admin",
+		Message:       message,
+		PrettyMessage: prettyMessage,
 		Data:          role,
 	})
 }
 
+func (lc *LawFirmController) HandlePromoteRoleToAdmin(c echo.Context) error {
+	return lc.updateRoleAdminStatus(c, true)
+}
+
 func (lc *LawFirmController) HandleDemoteRoleFromAdmin(c echo.Context) error {
-	lawFirmID := c.Param("id")
-	req := new(RoleAdminRequest)
-	if err := c.Bind(req); err != nil {
-		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
-	}
-
-	role, err := lc.lawFirmRepo.GetRoleByID(c.Request().Context(), req.RoleID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
-	if role == nil {
-		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
-	}
-
-	if role.LawFirmID != lawFirmID {
-		return c.JSON(http.StatusBadRequest, constants.Error{
-			Status:        400,
-			Message:       "Bad Request",
-			PrettyMessage: "The role does not belong to this law firm",
-		})
-	}
-
-	role.PermFirmAdmin = false
-	if err := lc.lawFirmRepo.UpdateRole(c.Request().Context(), role); err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
-
-	return c.JSON(http.StatusOK, constants.Response{
-		Status:        http.StatusOK,
-		Message:       "Role demoted from admin successfully",
-		PrettyMessage: "The role no longer has admin permissions",
-		Data:          role,
-	})
+	return lc.updateRoleAdminStatus(c, false)
 }
 
 func (lc *LawFirmController) HandleListRoles(c echo.Context) error {

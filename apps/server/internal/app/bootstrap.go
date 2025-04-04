@@ -40,7 +40,7 @@ func RegisterHooks(lc fx.Lifecycle, app *App) {
 }
 
 func Setup(app *App) {
-	if err := database.RunMigrations(app.DB); err != nil {
+	if err := database.RunPostgresMigrations(app.DB); err != nil {
 		log.Fatalf("Error running migrations: %v", err)
 		return
 	}
@@ -51,6 +51,8 @@ func Setup(app *App) {
 		app.Middlewares,
 		app.AuthController,
 		app.LawfirmController,
+		app.ContractController,
+		app.KeysController,
 		app.StartTime,
 	)
 }

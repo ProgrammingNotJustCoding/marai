@@ -6,7 +6,7 @@ import (
 	"marai/internal/database/schema"
 	"time"
 
-	"github.com/oklog/ulid/v2"
+	ulid "github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
 
@@ -120,7 +120,6 @@ func (r *LawFirmRepo) HasAdminPermission(ctx context.Context, userID, lawFirmID 
 		Where("law_firm_memberships.user_id = ? AND law_firm_memberships.law_firm_id = ? AND law_firm_roles.perm_firm_admin = ?",
 			userID, lawFirmID, true).
 		First(&membership).Error
-
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
@@ -155,7 +154,6 @@ func (r *LawFirmRepo) HasPermission(ctx context.Context, userID, lawFirmID, perm
 
 	var membership schema.LawFirmMembership
 	err := query.First(&membership).Error
-
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil

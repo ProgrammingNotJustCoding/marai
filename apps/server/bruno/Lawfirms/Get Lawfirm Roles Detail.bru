@@ -1,0 +1,15 @@
+meta {
+  name: Get Lawfirm Roles Detail
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{BaseUrl}}/lawfirms/01JNWMM59T5673SD8VSXXME2DS/roles
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}

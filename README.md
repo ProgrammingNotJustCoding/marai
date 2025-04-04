@@ -92,6 +92,47 @@ The system consists of multiple AWS and Azure services interacting to form a rob
 5. Configure Azure OpenAI API for AI-driven processing.
 6. Monitor performance using AWS CloudWatch.
 
+## Contract Management and Security
+
+Marai ensures secure and efficient contract management through the following measures:
+
+### Security Measures
+- **Role-Based Access Control (RBAC):**
+  - Permissions are enforced based on user roles (e.g., owner, admin, member).
+  - Only authorized users can create, update, delete, or view contracts.
+
+- **Data Encryption:**
+  - Contract files are encrypted using server-side encryption before being stored in the MinIO object storage.
+  - SHA-256 hashing is used to ensure file integrity.
+
+- **Audit Trails:**
+  - All actions on contracts (e.g., signing, viewing) are logged as signature events.
+  - These logs include metadata such as IP address, user agent, and timestamps.
+
+- **Soft Deletion:**
+  - Contracts are soft-deleted to prevent accidental data loss.
+  - Deleted contracts are marked with a `is_deleted` flag and retain their metadata for auditing purposes.
+
+- **Status Transitions:**
+  - Contracts follow a strict lifecycle (e.g., draft → pending_signature → signed → void).
+  - Invalid status transitions are rejected to maintain data integrity.
+
+### Features
+- **File Uploads:**
+  - Users can upload files to draft contracts.
+  - Uploaded files are securely stored and accessible only to authorized users.
+
+- **Party Management:**
+  - Parties can be added or removed from draft contracts.
+  - Each party has attributes like name, email, mobile, and role.
+
+- **Digital Signatures:**
+  - Parties can digitally sign contracts.
+  - Once all parties have signed, the contract status is updated to `signed`.
+
+- **Pagination and Filtering:**
+  - Contracts can be listed with filters (e.g., status, isTemplate) and pagination for efficient retrieval.
+
 ## Future Improvements
 - Implement serverless functions (AWS Lambda) for improved scalability.
 - Enhance AI models for better legal text processing.

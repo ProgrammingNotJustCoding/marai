@@ -1,0 +1,41 @@
+@startuml class
+skinparam nodesep 60
+
+class Client {
+    + sendRequest()
+    + receiveResponse()
+}
+
+class Server {
+    + processRequest()
+    + forwardRequest()
+}
+
+class SwarmServer {
+    + processQueue()
+    + queryAI()
+    + storeData()
+}
+
+class OpenAI {
+    + generateResponse()
+    + fineTuneModel()
+}
+
+class SQS {
+    + enqueueRequest()
+    + dequeueRequest()
+}
+
+class S3 {
+    + storeData()
+    + retrieveData()
+}
+
+Client --> Server : Interacts
+Server --> SwarmServer : Forwards Request
+SwarmServer --> OpenAI : Queries for AI Response
+SwarmServer --> S3 : Stores Processed Data
+SwarmServer --> SQS : Enqueues Tasks
+
+@enduml

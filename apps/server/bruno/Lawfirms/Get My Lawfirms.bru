@@ -1,0 +1,15 @@
+meta {
+  name: Get My Lawfirms
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{BaseUrl}}/lawfirms/me
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}

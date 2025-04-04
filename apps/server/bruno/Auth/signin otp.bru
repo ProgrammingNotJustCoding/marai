@@ -1,0 +1,18 @@
+meta {
+  name: signin otp
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{BaseUrl}}/auth/user/signin/otp
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "username": "harshpatel",
+    "mobile": "+919840121224"
+  }
+}

@@ -1,0 +1,40 @@
+@startuml component
+
+left to right direction
+skinparam linetype ortho
+skinparam componentStyle rectangle
+
+package "Client" {
+    [EC2 React Client]
+}
+
+package "AWS" {
+    [WAF]
+    [ELB]
+    [SQS]
+    [ElasticCache]
+    [RDS]
+    [CloudWatch]
+    [S3]
+}
+
+package "Azure" {
+    [OpenAI]
+    [Swarm Server (AzureVM, FastAPI)]
+    [Cognitive Search (RAG)]
+    [HDInsight]
+}
+
+[Client] --> [WAF]
+[WAF] --> [ELB]
+[ELB] --> [Server]
+[AWS] --> [Server]
+[Server] --> [AWS]
+[Server] --> [SQS]
+[SQS] --> [Swarm Server (AzureVM, FastAPI)]
+[Swarm Server] --> [OpenAI]
+[Swarm Server] --> [Cognitive Search (RAG)]
+[Swarm Server] --> [HDInsight]
+[Swarm Server] --> [S3]
+
+@enduml

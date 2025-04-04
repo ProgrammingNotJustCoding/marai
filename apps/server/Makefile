@@ -29,3 +29,9 @@ lint:
 
 lint-fix:
 	@golangci-lint run --fix
+
+podman-image:
+	@podman build -t localhost/marai-server:latest .
+
+generate-key:
+	@openssl rand -hex 64

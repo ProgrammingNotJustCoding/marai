@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/oklog/ulid/v2"
+	ulid "github.com/oklog/ulid/v2"
 	"gorm.io/gorm"
 )
 
@@ -79,4 +79,12 @@ func (r *SessionRepo) RevokeSession(ctx context.Context, token string) error {
 	}
 
 	return err
+}
+
+// TODO: for super admins / admin routes
+func (r *SessionRepo) ClearSessionCache() {
+	r.cacheMutex.Lock()
+	defer r.cacheMutex.Unlock()
+
+	r.sessionCache = make(map[string]*schema.Session)
 }

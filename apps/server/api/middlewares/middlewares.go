@@ -9,7 +9,7 @@ import (
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
 	m "github.com/labstack/echo/v4/middleware"
 )
 
@@ -57,6 +57,10 @@ func (mw *Middlewares) AuthMiddleware() echo.MiddlewareFunc {
 			session, err := mw.sessionRepo.GetSessionByToken(c.Request().Context(), sessionID.Value)
 			if err != nil {
 				c.Logger().Warn("Skill issue")
+				return c.JSON(http.StatusUnauthorized, constants.ErrUnauthorized)
+			}
+			if session == nil || session.IsRevoked {
+				c.Logger().Warn("Session not found")
 				return c.JSON(http.StatusUnauthorized, constants.ErrUnauthorized)
 			}
 

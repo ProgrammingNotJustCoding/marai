@@ -1,0 +1,32 @@
+meta {
+  name: Create Contract
+  type: http
+  seq: 1
+}
+
+docs {
+  title: "Create Contract"
+  description: """
+  This endpoint allows the creation of a new contract by providing details such as title, description, content, law firm ID, and whether it is a template.
+  """
+}
+
+post {
+  url: {{BaseUrl}}/contracts
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "title": "Sample Contract",
+    "description": "This is a sample contract description",
+    "content": "Contract content goes here",
+    "lawFirmId": "01JQVMZCM67MRKZCVN1DVT0FR3",
+    "isTemplate": false
+  }
+}

@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: marai-pod
+  labels:
+    app: marai
+spec:
+  containers:
+    - name: marai-server
+      image: localhost/marai-server:latest
+      ports:
+        - containerPort: 8080
+          hostPort: 8080
+      env:
+        - name: POSTGRES_HOST
+          value: localhost
+        - name: MINIO_HOST
+          value: localhost
+
+      resources:
+        limits:
+          memory: "512Mi"
+          cpu: "500m"
+
+    - name: marai-minio
+      image: docker.io/minio/minio:latest
+      ports:
+        - containerPort: 9000
+          hostPort: 9000
+        - containerPort: 9001
+          hostPort: 9001
+      env:
+        - name: MINIO_ROOT_USER
+          value: "HarshPatel"
+        - name: MINIO_ROOT_PASSWORD
+          value: "Password"
+      volumeMounts:
+        - name: minio-data
+          mountPath: /data
+      args: ["server", "--console-address", ":9001", "/data"]
+      resources:
+        limits:
+          memory: "1Gi"
+          cpu: "500m"
+
+    - name: marai-postgres
+      image: docker.io/postgres:13
+      ports:
+        - containerPort: 5432
+          hostPort: 5432
+      env:
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "postgres"
+        - name: POSTGRES_DB
+          value: "marai"
+      volumeMounts:
+        - name: postgres-data
+          mountPath: /var/lib/postgresql/data
+      resources:
+        limits:
+          memory: "1Gi"
+          cpu: "500m"
+
+  volumes:
+    - name: minio-data
+      hostPath:
+        path: /Users/harshnpatel/Documents/github/marai/data/minio
+        type: DirectoryOrCreate
+    - name: postgres-data
+      hostPath:
+        path: /Users/harshnpatel/Documents/github/marai/data/postgres
+        type: DirectoryOrCreate

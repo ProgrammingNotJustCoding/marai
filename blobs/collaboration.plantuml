@@ -1,0 +1,23 @@
+@startuml collab
+
+actor Client
+participant "Client Application" as ClientApp
+participant "Marai Backend" as Backend
+participant "AI Engine (Azure)" as AIEngine
+participant "AWS S3 (Case Files)" as S3
+participant "Legal Consultant (Law Firm)" as LegalConsultant
+participant "Marketplace" as Marketplace
+
+Client -> ClientApp : Request Legal Guidance
+ClientApp -> Backend : Send Request
+Backend -> AIEngine : Analyze Case and Provide Insights
+AIEngine -> Backend : Return AI Insights
+Backend -> ClientApp : Send Insights to Client
+ClientApp -> Client : Display Insights
+
+Client -> ClientApp : Submit Case Files
+ClientApp -> Backend : Send Case Files
+Backend -> S3 : Store Case Files Securely
+Backend -> LegalConsultant : Notify Legal Consultant for Review
+
+@enduml

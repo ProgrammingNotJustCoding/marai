@@ -1,0 +1,15 @@
+meta {
+  name: Download Key
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{BaseUrl}}/keys/:keyID/download
+  body: none
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}

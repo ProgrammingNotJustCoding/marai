@@ -8,43 +8,54 @@ import (
 	"marai/internal/database/repositories"
 	"time"
 
-	"github.com/labstack/echo/v4"
+	echo "github.com/labstack/echo/v4"
+	minio "github.com/minio/minio-go/v7"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
 
 type App struct {
-	Echo              *echo.Echo
-	DB                *gorm.DB
-	Middlewares       *middlewares.Middlewares
-	UserRepo          *repositories.UserRepo
-	SessionRepo       *repositories.SessionRepo
-	AuthController    *controllers.AuthController
-	LawfirmController *controllers.LawFirmController
-	RoleCache         *middlewares.RoleCache
-	StartTime         time.Time
+	Echo               *echo.Echo
+	DB                 *gorm.DB
+	minioDB            *minio.Client
+	Middlewares        *middlewares.Middlewares
+	UserRepo           *repositories.UserRepo
+	SessionRepo        *repositories.SessionRepo
+	AuthController     *controllers.AuthController
+	LawfirmController  *controllers.LawFirmController
+	ContractController *controllers.ContractsController
+	KeysController     *controllers.KeysController
+	RoleCache          *middlewares.RoleCache
+	StartTime          time.Time
 }
 
 func NewApp(
 	db *gorm.DB,
+	minioDB *minio.Client,
 	mw *middlewares.Middlewares,
 	UserRepo *repositories.UserRepo,
 	SessionRepo *repositories.SessionRepo,
 	AuthController *controllers.AuthController,
 	LawfirmController *controllers.LawFirmController,
+	ContractController *controllers.ContractsController,
+	KeysController *controllers.KeysController,
+	RoleCache *middlewares.RoleCache,
 ) *App {
 	e := echo.New()
 
 	return &App{
-		Echo:              e,
-		DB:                db,
-		Middlewares:       mw,
-		UserRepo:          UserRepo,
-		SessionRepo:       SessionRepo,
-		AuthController:    AuthController,
-		LawfirmController: LawfirmController,
-		RoleCache:         middlewares.NewRoleCache(),
-		StartTime:         time.Now(),
+		Echo:               e,
+		DB:                 db,
+		minioDB:            minioDB,
+		Middlewares:        mw,
+		UserRepo:           UserRepo,
+		SessionRepo:        SessionRepo,
+		AuthController:     AuthController,
+		LawfirmController:  LawfirmController,
+		ContractController: ContractController,
+		KeysController:     KeysController,
+		RoleCache:          RoleCache,
+		StartTime:          time.Now(),
 	}
 }
 
@@ -54,12 +65,17 @@ func NewFxApp() *fx.App {
 	return fx.New(
 		fx.Options(
 			fx.Provide(
-				NewDB,
+				database.NewPostgresDB,
+				database.NewMinioDB,
 				repositories.NewSessionRepository,
 				repositories.NewUserRepository,
 				repositories.NewLawFirmRepository,
+				repositories.NewContractsRepository,
 				controllers.NewAuthController,
 				controllers.NewLawFirmController,
+				controllers.NewContractsController,
+				controllers.NewKeysController,
+				middlewares.NewRoleCache,
 				middlewares.NewMiddlewares,
 				NewApp,
 			),
@@ -68,8 +84,4 @@ func NewFxApp() *fx.App {
 				RegisterHooks,
 			),
 		))
-}
-
-func NewDB() (*gorm.DB, error) {
-	return database.NewDB()
 }
