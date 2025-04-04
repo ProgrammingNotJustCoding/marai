@@ -78,10 +78,8 @@ func (kc *KeysController) HandleGenerateKeyPair(c echo.Context) error {
 	objectName := generatePrivateKeyObjectName(userID, keyID)
 	privateKeyBytes := []byte(privateKey)
 
-	// Create reader from bytes
 	reader := bytes.NewReader(privateKeyBytes)
 
-	// Create PutObject options
 	opts := minio.PutObjectOptions{ContentType: "application/x-pem-file"}
 
 	_, err = kc.minioClient.PutObject(
@@ -126,10 +124,8 @@ func (kc *KeysController) HandleDownloadPrivateKey(c echo.Context) error {
 
 	objectName := generatePrivateKeyObjectName(userID, keyID)
 
-	// Create GetObject options
 	opts := minio.GetObjectOptions{}
 
-	// Get object
 	obj, err := kc.minioClient.GetObject(c.Request().Context(), kc.bucketName, objectName, opts)
 	if err != nil {
 		c.Logger().Error("Error retrieving private key: ", err)
@@ -139,9 +135,12 @@ func (kc *KeysController) HandleDownloadPrivateKey(c echo.Context) error {
 			PrettyMessage: "There was an error retrieving your private key",
 		})
 	}
-	defer obj.Close()
+	defer func() {
+		if err := obj.Close(); err != nil {
+			c.Logger().Error("Error closing object: ", err)
+		}
+	}()
 
-	// Read object content
 	privateKeyBytes, err := io.ReadAll(obj)
 	if err != nil {
 		c.Logger().Error("Error reading private key data: ", err)
@@ -153,7 +152,6 @@ func (kc *KeysController) HandleDownloadPrivateKey(c echo.Context) error {
 	}
 
 	go func() {
-		// Create RemoveObject options
 		removeOpts := minio.RemoveObjectOptions{}
 
 		if err := kc.minioClient.RemoveObject(c.Request().Context(), kc.bucketName, objectName, removeOpts); err != nil {

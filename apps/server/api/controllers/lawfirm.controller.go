@@ -119,7 +119,6 @@ func (lc *LawFirmController) HandleCreateLawFirm(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	// create default role for the role with perm perm_firm_admin and a default membership to owner with that role
 	role := &schema.LawFirmRole{
 		LawFirmID:     lawFirm.ID,
 		Name:          "Admin",

@@ -1,0 +1,23 @@
+sequenceDiagram
+    actor Client
+    participant WAF as AWS WAF
+    participant ELB as AWS ELB
+    participant Server as Server (EC2, Echo)
+    participant SQS as AWS SQS
+    participant SwarmServer as Swarm Server (AzureVM, FastAPI)
+    participant OpenAI as Azure OpenAI
+    participant S3 as AWS S3
+    
+    Note over Client,S3: Technical Request Flow (Infrastructure)
+    
+    Client->>+WAF: Send Request
+    WAF->>+ELB: Forward Request
+    ELB->>+Server: Route to Server
+    Server->>+SQS: Queue Request
+    SQS->>+SwarmServer: Process Request
+    SwarmServer->>+OpenAI: Get AI Response
+    OpenAI-->>-SwarmServer: Return AI Output
+    SwarmServer->>+S3: Store Result Data
+    S3-->>-SwarmServer: Confirm Storage
+    SwarmServer-->>-Server: Send Processing Result
+    Server-->>-Client: Return Processed Data

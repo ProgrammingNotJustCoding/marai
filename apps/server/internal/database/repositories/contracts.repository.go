@@ -236,7 +236,6 @@ func (r *ContractsRepo) UploadEncryptedContractFileWithMetadata(ctx context.Cont
 	hasher.Write(contentBytes)
 	fileHash := fmt.Sprintf("%x", hasher.Sum(nil))
 
-	// Convert metadata to MinIO format
 	minioMetadata := make(map[string]string)
 	for key, value := range metadata {
 		minioMetadata["X-Amz-Meta-"+key] = value
@@ -373,7 +372,6 @@ func (r *ContractsRepo) SignContract(ctx context.Context, contractID, partyID, u
 	})
 }
 
-// ListContractFileVersions lists all versions of a contract file
 func (r *ContractsRepo) ListContractFileVersions(ctx context.Context, contractID string) ([]FileVersion, error) {
 	objectsPrefix := fmt.Sprintf("contracts/%s/", contractID)
 
@@ -385,23 +383,21 @@ func (r *ContractsRepo) ListContractFileVersions(ctx context.Context, contractID
 
 	var versions []FileVersion
 
-	// Get all objects
 	for object := range r.minioClient.ListObjects(ctx, r.bucketName, opts) {
 		if object.Err != nil {
 			return nil, object.Err
 		}
 
-		// Get object info to retrieve metadata
 		objInfo, err := r.minioClient.StatObject(ctx, r.bucketName, object.Key, minio.StatObjectOptions{})
 		if err != nil {
-			continue // Skip if we can't get info
+			continue
 		}
 
 		objVerType := objInfo.Metadata.Get("fileGenType")
 		if objVerType == "" {
 			objVerType = "Regular"
 		}
-		// Create file version object
+
 		version := FileVersion{
 			VersionID:   objInfo.VersionID,
 			FileName:    strings.TrimPrefix(object.Key, objectsPrefix),
@@ -417,9 +413,7 @@ func (r *ContractsRepo) ListContractFileVersions(ctx context.Context, contractID
 	return versions, nil
 }
 
-// GetContractFileVersion gets a specific version of a contract file
 func (r *ContractsRepo) GetContractFileVersion(ctx context.Context, contractID string, versionID string) ([]byte, string, error) {
-	// First, list objects to find the file with this version ID
 	opts := minio.ListObjectsOptions{
 		Prefix:    fmt.Sprintf("contracts/%s/", contractID),
 		Recursive: true,
@@ -433,7 +427,6 @@ func (r *ContractsRepo) GetContractFileVersion(ctx context.Context, contractID s
 			return nil, "", object.Err
 		}
 
-		// Get object with version info
 		objInfo, err := r.minioClient.StatObject(ctx, r.bucketName, object.Key, minio.StatObjectOptions{})
 		if err != nil {
 			continue
@@ -450,7 +443,6 @@ func (r *ContractsRepo) GetContractFileVersion(ctx context.Context, contractID s
 		return nil, "", fmt.Errorf("version not found")
 	}
 
-	// Get the specific version
 	object, err := r.minioClient.GetObject(ctx, r.bucketName, objectName, minio.GetObjectOptions{
 		VersionID: versionID,
 	})

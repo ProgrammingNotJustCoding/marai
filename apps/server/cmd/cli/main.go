@@ -5,11 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"marai/internal/utils"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"marai/internal/utils"
 )
 
 const (
@@ -23,7 +22,6 @@ type Config struct {
 }
 
 func main() {
-	// Define command line arguments
 	generateKeyCmd := flag.NewFlagSet("generate-key", flag.ExitOnError)
 	generateKeyOutput := generateKeyCmd.String("output", "marai_key", "Base name for output key files (without extension)")
 
@@ -38,7 +36,6 @@ func main() {
 	extractPublicCmd := flag.NewFlagSet("extract-public", flag.ExitOnError)
 	extractPrivateKeyPath := extractPublicCmd.String("key", "", "Path to private key file")
 
-	// Display help if no commands
 	if len(os.Args) < 2 {
 		printUsage()
 		os.Exit(1)
@@ -46,10 +43,14 @@ func main() {
 
 	switch os.Args[1] {
 	case "generate-key":
-		generateKeyCmd.Parse(os.Args[2:])
+		if err := generateKeyCmd.Parse(os.Args[2:]); err != nil {
+			log.Fatalf("Error parsing generate-key flags: %v", err)
+		}
 		handleGenerateKey(*generateKeyOutput)
 	case "sign":
-		signCmd.Parse(os.Args[2:])
+		if err := signCmd.Parse(os.Args[2:]); err != nil {
+			log.Fatalf("Error parsing sign flags: %v", err)
+		}
 		if *signHash == "" {
 			fmt.Println("Error: -hash flag is required")
 			signCmd.PrintDefaults()
@@ -57,10 +58,14 @@ func main() {
 		}
 		handleSign(*signHash, *signKeyPath)
 	case "config":
-		configCmd.Parse(os.Args[2:])
+		if err := configCmd.Parse(os.Args[2:]); err != nil {
+			log.Fatalf("Error parsing config flags: %v", err)
+		}
 		handleConfig(*configAPIURL, *configKeyPath)
 	case "extract-public":
-		extractPublicCmd.Parse(os.Args[2:])
+		if err := extractPublicCmd.Parse(os.Args[2:]); err != nil {
+			log.Fatalf("Error parsing extract-public flags: %v", err)
+		}
 		handleExtractPublic(*extractPrivateKeyPath)
 	case "help":
 		printUsage()
@@ -95,12 +100,10 @@ func loadConfig() (Config, error) {
 		APIBaseURL: "http://localhost:8000/api",
 	}
 
-	// Check if config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		return config, nil
 	}
 
-	// Read config file
 	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return config, err
@@ -125,27 +128,24 @@ func saveConfig(config Config) error {
 		return err
 	}
 
-	return os.WriteFile(configPath, data, 0600)
+	return os.WriteFile(configPath, data, 0o600)
 }
 
 func handleGenerateKey(outputName string) {
 	fmt.Println("Generating RSA key pair...")
 
-	// Generate key pair
 	privateKey, publicKey, err := utils.GenerateKeyPair(2048)
 	if err != nil {
 		log.Fatalf("Error generating key pair: %v", err)
 	}
 
-	// Save private key
 	privateKeyPath := outputName + "_private.pem"
-	if err := os.WriteFile(privateKeyPath, []byte(privateKey), 0600); err != nil {
+	if err := os.WriteFile(privateKeyPath, []byte(privateKey), 0o600); err != nil {
 		log.Fatalf("Error saving private key: %v", err)
 	}
 
-	// Save public key
 	publicKeyPath := outputName + "_public.pem"
-	if err := os.WriteFile(publicKeyPath, []byte(publicKey), 0644); err != nil {
+	if err := os.WriteFile(publicKeyPath, []byte(publicKey), 0o644); err != nil {
 		log.Fatalf("Error saving public key: %v", err)
 	}
 
@@ -154,7 +154,6 @@ func handleGenerateKey(outputName string) {
 	fmt.Printf("  Public key: %s\n", publicKeyPath)
 	fmt.Println("\nIMPORTANT: Keep your private key secure and back it up!")
 
-	// Update config with new key path
 	config, err := loadConfig()
 	if err != nil {
 		fmt.Printf("Warning: Could not load config: %v\n", err)
@@ -172,13 +171,11 @@ func handleGenerateKey(outputName string) {
 }
 
 func handleSign(fileHash, keyPath string) {
-	// Read config
 	config, err := loadConfig()
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	// If key path is not provided, use the one from config
 	if keyPath == "" {
 		keyPath = config.PrivateKeyPath
 		if keyPath == "" {
@@ -186,14 +183,12 @@ func handleSign(fileHash, keyPath string) {
 		}
 	}
 
-	// Read private key
 	privateKeyBytes, err := os.ReadFile(keyPath)
 	if err != nil {
 		log.Fatalf("Error reading private key: %v", err)
 	}
 	privateKey := string(privateKeyBytes)
 
-	// Sign the hash
 	signature, err := utils.SignData(privateKey, []byte(fileHash))
 	if err != nil {
 		log.Fatalf("Error signing hash: %v", err)
@@ -233,7 +228,6 @@ func handleConfig(apiURL, keyPath string) {
 }
 
 func handleExtractPublic(keyPath string) {
-	// Get key path from config if not provided
 	if keyPath == "" {
 		config, err := loadConfig()
 		if err != nil {
@@ -246,13 +240,11 @@ func handleExtractPublic(keyPath string) {
 		}
 	}
 
-	// Read private key
 	privateKeyBytes, err := os.ReadFile(keyPath)
 	if err != nil {
 		log.Fatalf("Error reading private key: %v", err)
 	}
 
-	// Extract public key
 	publicKey, err := utils.ExtractPublicKeyFromPrivateKey(string(privateKeyBytes))
 	if err != nil {
 		log.Fatalf("Error extracting public key: %v", err)
@@ -261,14 +253,11 @@ func handleExtractPublic(keyPath string) {
 	fmt.Println("Public Key (PEM format):")
 	fmt.Println(publicKey)
 
-	// Save to a file with the same base name but _public.pem suffix
 	basePath := strings.TrimSuffix(keyPath, ".pem")
-	if strings.HasSuffix(basePath, "_private") {
-		basePath = strings.TrimSuffix(basePath, "_private")
-	}
+	basePath = strings.TrimSuffix(basePath, "_private")
 	publicKeyPath := basePath + "_public.pem"
 
-	if err := os.WriteFile(publicKeyPath, []byte(publicKey), 0644); err != nil {
+	if err := os.WriteFile(publicKeyPath, []byte(publicKey), 0o644); err != nil {
 		log.Fatalf("Error saving public key: %v", err)
 	}
 

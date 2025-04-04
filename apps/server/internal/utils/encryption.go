@@ -66,7 +66,6 @@ func deriveKey(keyString string, keyLength int) []byte {
 }
 
 func ExtractPublicKeyFromPrivateKey(privateKeyPEM string) (string, error) {
-	// Parse the private key
 	block, _ := pem.Decode([]byte(privateKeyPEM))
 	if block == nil {
 		return "", fmt.Errorf("failed to parse PEM block containing private key")
@@ -88,7 +87,6 @@ func ExtractPublicKeyFromPrivateKey(privateKeyPEM string) (string, error) {
 		return "", fmt.Errorf("failed to parse private key: %v", err)
 	}
 
-	// Extract the public key based on the private key type
 	var publicKeyBytes []byte
 
 	switch k := privateKey.(type) {
@@ -102,7 +100,6 @@ func ExtractPublicKeyFromPrivateKey(privateKeyPEM string) (string, error) {
 		return "", fmt.Errorf("failed to marshal public key: %v", err)
 	}
 
-	// Encode to PEM format
 	publicPEM := &pem.Block{
 		Type:  "PUBLIC KEY",
 		Bytes: publicKeyBytes,

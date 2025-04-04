@@ -695,7 +695,6 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 		})
 	}
 
-	// Validate the signature using the user's public keys
 	userKeys, err := cc.contracts.GetUserPublicKeys(c.Request().Context(), userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
@@ -703,7 +702,7 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 
 	isValid := false
 	for _, key := range userKeys {
-		// Ensure the public key is in correct PEM format
+
 		key = strings.TrimSpace(key)
 		if !strings.HasPrefix(key, "-----BEGIN PUBLIC KEY-----") {
 			key = "-----BEGIN PUBLIC KEY-----\n" + key
@@ -712,11 +711,10 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 			key = key + "\n-----END PUBLIC KEY-----"
 		}
 
-		// Attempt signature verification
 		valid, verifyErr := utils.VerifySignature(key, []byte(contract.FileHash), req.Signature)
 		if verifyErr != nil {
 			c.Logger().Errorf("Error verifying signature with key: %s, error: %v", key, verifyErr)
-			continue // Try the next key if this one fails
+			continue
 		}
 		if valid {
 			isValid = true
@@ -732,7 +730,6 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 		})
 	}
 
-	// Update the signing status in the database
 	if err := cc.contracts.SignContract(
 		c.Request().Context(),
 		contractID,
@@ -745,7 +742,6 @@ func (cc *ContractsController) HandleSignContract(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	// Mark the party as verified
 	foundParty.HasVerified = true
 	if err := cc.contracts.UpdateContractParty(c.Request().Context(), foundParty); err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
