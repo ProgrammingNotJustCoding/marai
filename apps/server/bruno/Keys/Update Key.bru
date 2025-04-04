@@ -1,0 +1,15 @@
+meta {
+  name: Update Key
+  type: http
+  seq: 5
+}
+put {
+  url: {{BaseUrl}}/keys/:keyID
+  body: {
+    "keyData": "<updated-key-data>"
+  }
+  auth: none
+}
+headers {
+  Cookie: {{Cookie}}
+}

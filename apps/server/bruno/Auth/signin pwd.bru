@@ -1,0 +1,18 @@
+meta {
+  name: signin password
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{BaseUrl}}/auth/user/signin/password
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "mobile": "+919840121224",
+    "password": "helloworld"
+  }
+}
