@@ -25,10 +25,12 @@ type User struct {
 }
 
 type UserPublicKey struct {
-	ID      string    `json:"id" gorm:"primaryKey;type:varchar(26)"`
-	UserID  string    `json:"userId" gorm:"type:varchar(26);index"`
-	Key     string    `json:"key" gorm:"type:text"`
-	Created time.Time `json:"created" gorm:"autoCreateTime"`
+	ID            string    `json:"id" gorm:"primaryKey;type:varchar(26)"`
+	UserID        string    `json:"userId" gorm:"type:varchar(26);index"`
+	Key           string    `json:"key" gorm:"type:text"`
+	Name          string    `json:"name" gorm:"type:varchar(255)"`
+	HasDownloaded bool      `json:"hasDownloaded" gorm:"default:false"`
+	Created       time.Time `json:"created" gorm:"autoCreateTime"`
 }
 
 func (UserPublicKey) TableName() string {

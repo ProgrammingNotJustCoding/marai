@@ -36,11 +36,14 @@ func SetupRoutes(router *echo.Group,
 	authRouter.POST("/user/signin/password", aC.HandleSigninPassword)
 	authRouter.GET("/user/public", aC.HandleGetPublicUsersByUsername)
 
-	userGroup := router.Group("/keys")
-	userGroup.Use(mW.AuthMiddleware())
-	userGroup.GET("", kC.HandleListPublicKeys)
-	userGroup.POST("/generate", kC.HandleGenerateKeyPair)
-	userGroup.GET("/download/:keyId", kC.HandleDownloadPrivateKey)
+	keysGroup := router.Group("/keys")
+	keysGroup.Use(mW.AuthMiddleware())
+
+	keysGroup.GET("", kC.HandleListPublicKeys)
+	keysGroup.POST("", kC.HandleGenerateKeyPair)
+	keysGroup.PUT("/:keyID", kC.HandleUpdateKey)
+	keysGroup.DELETE("/:keyID", kC.HandleDeleteKey)
+	keysGroup.POST("/:keyID/download", kC.HandleDownloadKey)
 
 	lawFirmRouter := router.Group("/lawfirms")
 	lawFirmRouter.Use(mW.AuthMiddleware())

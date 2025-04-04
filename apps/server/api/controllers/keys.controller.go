@@ -180,6 +180,96 @@ func (kc *KeysController) HandleListPublicKeys(c echo.Context) error {
 	})
 }
 
+func (kc *KeysController) HandleUpdateKey(c echo.Context) error {
+	userID := c.Get("userID").(string)
+	keyID := c.Param("keyID")
+
+	type KeyUpdateRequest struct {
+		Name string `json:"name" validate:"required"`
+	}
+
+	var req KeyUpdateRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
+	}
+
+	exists, err := kc.userRepo.UserOwnsKey(c.Request().Context(), userID, keyID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	if !exists {
+		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
+	}
+
+	if err := kc.userRepo.UpdateKeyName(c.Request().Context(), keyID, req.Name); err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	return c.JSON(http.StatusOK, constants.Response{
+		Status:  http.StatusOK,
+		Message: "Key updated successfully",
+	})
+}
+
+func (kc *KeysController) HandleDeleteKey(c echo.Context) error {
+	userID := c.Get("userID").(string)
+	keyID := c.Param("keyID")
+
+	exists, err := kc.userRepo.UserOwnsKey(c.Request().Context(), userID, keyID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	if !exists {
+		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
+	}
+
+	if err := kc.userRepo.DeleteKey(c.Request().Context(), keyID); err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	return c.JSON(http.StatusOK, constants.Response{
+		Status:  http.StatusOK,
+		Message: "Key deleted successfully",
+	})
+}
+
+func (kc *KeysController) HandleDownloadKey(c echo.Context) error {
+	userID := c.Get("userID").(string)
+	keyID := c.Param("keyID")
+
+	exists, err := kc.userRepo.UserOwnsKey(c.Request().Context(), userID, keyID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	if !exists {
+		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
+	}
+
+	key, err := kc.userRepo.GetKeyByID(c.Request().Context(), keyID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	if key.HasDownloaded {
+		return c.JSON(http.StatusBadRequest, constants.Error{
+			Status:        http.StatusBadRequest,
+			Message:       "Key already downloaded",
+			PrettyMessage: "This key has already been downloaded",
+		})
+	}
+
+	if err := kc.userRepo.MarkKeyAsDownloaded(c.Request().Context(), keyID); err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	return c.JSON(http.StatusOK, constants.Response{
+		Status:  http.StatusOK,
+		Message: "Key downloaded successfully",
+		Data: map[string]string{
+			"key": key.Key,
+		},
+	})
+}
+
 func generatePrivateKeyObjectName(userID, keyID string) string {
 	return "private_keys/" + userID + "/" + keyID + ".pem"
 }

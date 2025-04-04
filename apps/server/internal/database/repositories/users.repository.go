@@ -204,3 +204,27 @@ func (r *UserRepo) GetPublicKeys(ctx context.Context, userID string) ([]map[stri
 	}
 	return result, nil
 }
+
+func (r *UserRepo) UpdateKeyName(ctx context.Context, keyID string, name string) error {
+	return r.db.WithContext(ctx).Model(&schema.UserPublicKey{}).
+		Where("id = ?", keyID).
+		Update("name", name).Error
+}
+
+func (r *UserRepo) DeleteKey(ctx context.Context, keyID string) error {
+	return r.db.WithContext(ctx).Delete(&schema.UserPublicKey{}, "id = ?", keyID).Error
+}
+
+func (r *UserRepo) GetKeyByID(ctx context.Context, keyID string) (*schema.UserPublicKey, error) {
+	var key schema.UserPublicKey
+	if err := r.db.WithContext(ctx).Where("id = ?", keyID).First(&key).Error; err != nil {
+		return nil, err
+	}
+	return &key, nil
+}
+
+func (r *UserRepo) MarkKeyAsDownloaded(ctx context.Context, keyID string) error {
+	return r.db.WithContext(ctx).Model(&schema.UserPublicKey{}).
+		Where("id = ?", keyID).
+		Update("has_downloaded", true).Error
+}

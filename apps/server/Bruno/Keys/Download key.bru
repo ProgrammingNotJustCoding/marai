@@ -1,11 +1,11 @@
 meta {
-  name: Download key
+  name: Download Key
   type: http
   seq: 4
 }
 
-get {
-  url: {{BaseUrl}}/keys/download/01JQZVSZC00XK45HRRQCZHRWFY
+post {
+  url: {{BaseUrl}}/keys/:keyID/download
   body: none
   auth: none
 }
