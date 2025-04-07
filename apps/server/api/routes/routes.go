@@ -27,23 +27,27 @@ func SetupRoutes(router *echo.Group,
 
 	authRouter := router.Group("/auth")
 	authRouter.POST("/user/signup", aC.HandleUserSignup)
-	authRouter.POST("/user/signup/verify", aC.HandleUserSignupVerify)
+	authRouter.POST("/user/signup/email/verify", aC.HandleUserSignupEmailVerify)
+	authRouter.POST("/user/signup/mobile/verify", aC.HandleUserSignupMobileVerify)
 
-	authRouter.POST("/user/signin/otp", aC.HandleSigninOTP)
-	authRouter.POST("/user/signin/otp/verify", aC.HandleSigninOTPVerify)
-	// TODO: below func is redundant, remove it later
-	authRouter.POST("/user/signin/otp/resend", aC.HandleSigninOTPResend)
+	authRouter.POST("/user/signin/mobile/otp", aC.HandleSigninMobileOTP)
+	authRouter.POST("/user/signin/mobile/verify", aC.HandleSigninMobileOTPVerify)
+	authRouter.POST("/user/signin/email/otp", aC.HandleSigninEmailOTP)
+	authRouter.POST("/user/signin/email/verify", aC.HandleSigninEmailVerify)
 	authRouter.POST("/user/signin/password", aC.HandleSigninPassword)
+	authRouter.POST("/user/forgot-password", aC.HandleForgotPassword)
+
+	authRouter.POST("/lawfirm/signup", aC.HandleLawFirmSignup)
+	authRouter.POST("/lawfirm/signup/email/verify", aC.HandleLawFirmSignupVerifyOTP)
+	authRouter.POST("/lawfirm/signup/mobile/verify", aC.HandleLawFirmSignupVerify)
+
+	authRouter.POST("/lawfirm/signin/mobile/otp", aC.HandleLawFirmSigninOTP)
+	authRouter.POST("/lawfirm/signin/mobile/verify", aC.HandleLawFirmSigninOTPVerify)
+	authRouter.POST("/lawfirm/signin/email/otp", aC.HandleLawFirmSigninEmailOTP)
+	authRouter.POST("/lawfirm/signin/email/verify", aC.HandleLawFirmSigninEmailVerify)
+	authRouter.POST("/lawfirm/signin/password", aC.HandleLawFirmSigninPassword)
+	authRouter.POST("/lawfirm/forgot-password", aC.HandleLawFirmForgotPassword)
 	authRouter.GET("/user/public", aC.HandleGetPublicUsersByUsername)
-
-	keysGroup := router.Group("/keys")
-	keysGroup.Use(mW.AuthMiddleware())
-
-	keysGroup.GET("", kC.HandleListPublicKeys)
-	keysGroup.POST("", kC.HandleGenerateKeyPair)
-	keysGroup.PUT("/:keyID", kC.HandleUpdateKey)
-	keysGroup.DELETE("/:keyID", kC.HandleDeleteKey)
-	keysGroup.POST("/:keyID/download", kC.HandleDownloadKey)
 
 	lawFirmRouter := router.Group("/lawfirms")
 	lawFirmRouter.Use(mW.AuthMiddleware())
@@ -51,17 +55,18 @@ func SetupRoutes(router *echo.Group,
 	lawFirmRouter.GET("", lC.HandleGetAllLawFirms)
 	lawFirmRouter.GET("/me", lC.HandleListLawFirms)
 
-	lawFirmRouter.POST("", lC.HandleCreateLawFirm)
 	lawFirmRouter.GET("/:id", lC.HandleGetLawFirm)
 	lawFirmRouter.PUT("/:id", lC.HandleUpdateLawFirm, mW.RequireLawFirmAdmin())
 	lawFirmRouter.DELETE("/:id", lC.HandleDeleteLawFirm, mW.RequireLawFirmOwnership())
 
+	// TODO: "/:id/members/new" can only be created from the lawfirm account. Random pwd and returned. argon hash will be saved
+	lawFirmRouter.POST("/:id/members/new", lC.HandleAddMember, mW.RequireLawFirmAdmin())
+	lawFirmRouter.POST("/:id/members/reset-pa", lC.HandleResetMemberPassword, mW.RequireLawFirmAdmin())
 	lawFirmRouter.GET("/:id/members", lC.HandleListMembers, mW.RequirePermission("read"))
-	lawFirmRouter.POST("/:id/members", lC.HandleAddMember, mW.RequireLawFirmAdmin())
 	lawFirmRouter.PUT("/:id/members/:memberId", lC.HandleUpdateMember, mW.RequireLawFirmAdmin())
 	lawFirmRouter.DELETE("/:id/members/:memberId", lC.HandleRemoveMember, mW.RequireLawFirmAdmin())
 
-	lawFirmRouter.GET("/:id/roles", lC.HandleListRoles, mW.RequirePermission("read"))
+	lawFirmRouter.GET("/:id/roles/new", lC.HandleListRoles, mW.RequirePermission("read"))
 	lawFirmRouter.POST("/:id/roles", lC.HandleCreateRole, mW.RequireLawFirmAdmin())
 	lawFirmRouter.PUT("/:id/roles/:roleId", lC.HandleUpdateRole, mW.RequireLawFirmAdmin())
 	lawFirmRouter.DELETE("/:id/roles/:roleId", lC.HandleDeleteRole, mW.RequireLawFirmAdmin())
@@ -73,7 +78,15 @@ func SetupRoutes(router *echo.Group,
 
 	// TODO: Make useful admin routes later
 
-	// TODO Contracts routes
+	keysGroup := router.Group("/keys")
+	keysGroup.Use(mW.AuthMiddleware())
+
+	keysGroup.GET("", kC.HandleListPublicKeys)
+	keysGroup.POST("", kC.HandleGenerateKeyPair)
+	keysGroup.PUT("/:keyID", kC.HandleUpdateKey)
+	keysGroup.DELETE("/:keyID", kC.HandleDeleteKey)
+	keysGroup.POST("/:keyID/download", kC.HandleDownloadKey)
+
 	contractsRouter := router.Group("/contracts")
 	contractsRouter.Use(mW.AuthMiddleware())
 
