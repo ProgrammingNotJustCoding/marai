@@ -4,12 +4,11 @@ import "time"
 
 type LawFirm struct {
 	ID               string `json:"id" gorm:"primaryKey;type:varchar(36)"`
-	Name             string `json:"name" gorm:"unique;not null"`
+	Name             string `json:"name" gorm:"not null"`
 	Address          string `json:"address,omitempty"`
-	Phone            string `json:"phone,omitempty"`
+	Mobile           string `json:"mobile" gorm:"unique;not null"`
 	Email            string `json:"email" gorm:"unique;not null"`
-	OwnerID          string `json:"ownerId" gorm:"not null;index"`
-	Owner            User   `gorm:"foreignKey:OwnerID"`
+	HashedPassword   string `json:"hashedPassword" gorm:"not null"`
 	IsEmailVerified  bool   `json:"isEmailVerified,omitempty" gorm:"default:false"`
 	IsMobileVerified bool   `json:"isMobileVerified,omitempty" gorm:"default:false"`
 	IsDeleted        bool   `json:"isDeleted" gorm:"not null;default:false"`
@@ -24,12 +23,13 @@ type LawFirm struct {
 	PublicSocials3   string `json:"publicSocials3,omitempty"`
 	PublicSocials4   string `json:"publicSocials4,omitempty"`
 
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	DeletedAt time.Time `json:"deletedAt,omitzero"`
+	LastLoginAt time.Time `json:"lastLoginAt"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+	DeletedAt   time.Time `json:"deletedAt,omitzero"`
 
-	Roles   []LawFirmRole    `gorm:"foreignKey:LawFirmID"`
-	Members []LawFirmMembers `gorm:"foreignKey:LawFirmID"`
+	Roles   []LawFirmRole   `gorm:"foreignKey:LawFirmID"`
+	Members []LawFirmMember `gorm:"foreignKey:LawFirmID"`
 }
 
 type LawFirmRole struct {

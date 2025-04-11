@@ -5,31 +5,17 @@ import (
 	"marai/internal/database/repositories"
 	"marai/internal/database/schema"
 	"net/http"
-	"strings"
+	"time"
 
-	echo "github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4"
+	"github.com/oklog/ulid/v2"
+	"golang.org/x/crypto/bcrypt"
 )
-
-type CreateLawFirmRequest struct {
-	Name             string `json:"name" validate:"required"`
-	Address          string `json:"address"`
-	Phone            string `json:"phone"`
-	Email            string `json:"email" validate:"required,email"`
-	PublicContact    string `json:"publicContact"`
-	PublicAddress    string `json:"publicAddress"`
-	PublicImageUrl   string `json:"publicImageUrl"`
-	PublicBannerUrl  string `json:"publicBannerUrl"`
-	PublicWebsiteUrl string `json:"publicWebsiteUrl"`
-	PublicSocials1   string `json:"publicSocials1"`
-	PublicSocials2   string `json:"publicSocials2"`
-	PublicSocials3   string `json:"publicSocials3"`
-	PublicSocials4   string `json:"publicSocials4"`
-}
 
 type UpdateLawFirmRequest struct {
 	Name             string `json:"name"`
 	Address          string `json:"address"`
-	Phone            string `json:"phone"`
+	Mobile           string `json:"mobile"`
 	Email            string `json:"email" validate:"email"`
 	PublicContact    string `json:"publicContact"`
 	PublicAddress    string `json:"publicAddress"`
@@ -51,26 +37,33 @@ type CreateRoleRequest struct {
 	PermFirmAdmin bool   `json:"permFirmAdmin"`
 }
 
-type RoleAdminRequest struct {
-	RoleID string `json:"roleId" validate:"required"`
-}
-
-type LawFirmController struct {
-	lawFirmRepo *repositories.LawFirmRepo
-}
-
 type AddMemberRequest struct {
-	UserID string `json:"userId,omitempty" validate:"required"`
 	RoleID string `json:"roleId,omitempty" validate:"required"`
+
+	MemberName      string `json:"memberName,omitempty" validate:"required"`
+	MemberEmail     string `json:"memberEmail,omitempty" validate:"required"`
+	MemberPhone     string `json:"memberPhone,omitempty" validate:"required"`
+	MemberImageUrl  string `json:"memberImage,omitempty"`
+	MemberBannerUrl string `json:"memberBanner,omitempty"`
 }
 
 type UpdateMemberRequest struct {
 	RoleID string `json:"roleId,omitempty" validate:"required"`
 }
 
-func NewLawFirmController(lawFirmRepo *repositories.LawFirmRepo) *LawFirmController {
+type RoleAdminRequest struct {
+	RoleID string `json:"roleId" validate:"required"`
+}
+
+type LawFirmController struct {
+	lawFirmRepo *repositories.LawFirmRepo
+	userRepo    *repositories.UserRepo
+}
+
+func NewLawFirmController(lawFirmRepo *repositories.LawFirmRepo, userRepo *repositories.UserRepo) *LawFirmController {
 	return &LawFirmController{
 		lawFirmRepo: lawFirmRepo,
+		userRepo:    userRepo,
 	}
 }
 
@@ -84,66 +77,6 @@ func (lc *LawFirmController) HandleGetAllLawFirms(c echo.Context) error {
 		Status:  http.StatusOK,
 		Message: "Law firms retrieved successfully",
 		Data:    lawFirms,
-	})
-}
-
-func (lc *LawFirmController) HandleCreateLawFirm(c echo.Context) error {
-	req := new(CreateLawFirmRequest)
-	if err := c.Bind(req); err != nil {
-		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
-	}
-
-	userID := c.Get("userID").(string)
-	lawFirm := &schema.LawFirm{
-		Name:             req.Name,
-		Address:          req.Address,
-		Phone:            req.Phone,
-		Email:            req.Email,
-		OwnerID:          userID,
-		PublicContact:    req.PublicContact,
-		PublicAddress:    req.PublicAddress,
-		PublicImageUrl:   req.PublicImageUrl,
-		PublicBannerUrl:  req.PublicBannerUrl,
-		PublicWebsiteUrl: req.PublicWebsiteUrl,
-		PublicSocials1:   req.PublicSocials1,
-		PublicSocials2:   req.PublicSocials2,
-		PublicSocials3:   req.PublicSocials3,
-		PublicSocials4:   req.PublicSocials4,
-	}
-
-	if err := lc.lawFirmRepo.CreateLawFirm(c.Request().Context(), lawFirm); err != nil {
-		if strings.Contains(err.Error(), "ERROR: duplicate key value violates unique constraint \"uni_law_firms_email\"") {
-			return c.JSON(http.StatusConflict, constants.ErrDuplicateEmail)
-		}
-
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
-
-	role := &schema.LawFirmRole{
-		LawFirmID:     lawFirm.ID,
-		Name:          "Admin",
-		PermRead:      true,
-		PermWrite:     true,
-		PermManage:    true,
-		PermFirmAdmin: true,
-	}
-	if err := lc.lawFirmRepo.CreateRole(c.Request().Context(), role); err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
-	membership := &schema.LawFirmMembership{
-		UserID:    userID,
-		LawFirmID: lawFirm.ID,
-		RoleID:    role.ID,
-	}
-	if err := lc.lawFirmRepo.CreateMembership(c.Request().Context(), membership); err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
-
-	return c.JSON(http.StatusCreated, constants.Response{
-		Status:        http.StatusCreated,
-		Message:       "Law firm created successfully",
-		PrettyMessage: "Law firm has been created successfully",
-		Data:          lawFirm,
 	})
 }
 
@@ -199,8 +132,8 @@ func (lc *LawFirmController) HandleUpdateLawFirm(c echo.Context) error {
 	if req.Address != "" {
 		lawFirm.Address = req.Address
 	}
-	if req.Phone != "" {
-		lawFirm.Phone = req.Phone
+	if req.Mobile != "" {
+		lawFirm.Mobile = req.Mobile
 	}
 	if req.Email != "" {
 		lawFirm.Email = req.Email
@@ -404,7 +337,7 @@ func (mc *LawFirmController) HandleAddMember(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
 	}
 
-	isMember, err := mc.lawFirmRepo.IsMember(c.Request().Context(), req.UserID, lawFirmID)
+	isMember, err := mc.lawFirmRepo.IsMember(c.Request().Context(), req.MemberEmail, lawFirmID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
@@ -412,26 +345,38 @@ func (mc *LawFirmController) HandleAddMember(c echo.Context) error {
 		return c.JSON(http.StatusConflict, constants.ErrConflict)
 	}
 
-	membership := &schema.LawFirmMembership{
-		UserID:    req.UserID,
-		LawFirmID: lawFirmID,
-		RoleID:    req.RoleID,
+	password := ulid.Make().String()
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	if err := mc.lawFirmRepo.CreateMembership(c.Request().Context(), membership); err != nil {
+	member := &schema.LawFirmMember{
+		LawFirmID:   lawFirmID,
+		RoleID:      req.RoleID,
+		MemberName:  req.MemberName,
+		MemberEmail: req.MemberEmail,
+		MemberPhone: req.MemberPhone,
+		MemberHash:  string(hashedPassword),
+	}
+
+	if err := mc.lawFirmRepo.CreateMember(c.Request().Context(), member); err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
 	return c.JSON(http.StatusCreated, constants.Response{
 		Status:  http.StatusCreated,
 		Message: "Member added successfully",
-		Data:    membership,
+		Data: map[string]interface{}{
+			"email":    member.MemberEmail,
+			"password": password,
+		},
 	})
 }
 
 func (mc *LawFirmController) HandleListMembers(c echo.Context) error {
 	lawFirmID := c.Param("id")
-	memberships, err := mc.lawFirmRepo.GetMembershipsByLawFirmID(c.Request().Context(), lawFirmID)
+	members, err := mc.lawFirmRepo.GetMembersByLawFirmID(c.Request().Context(), lawFirmID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
@@ -439,46 +384,99 @@ func (mc *LawFirmController) HandleListMembers(c echo.Context) error {
 	return c.JSON(http.StatusOK, constants.Response{
 		Status:  http.StatusOK,
 		Message: "Members retrieved successfully",
-		Data:    memberships,
+		Data:    members,
 	})
 }
 
 func (mc *LawFirmController) HandleUpdateMember(c echo.Context) error {
-	membershipID := c.Param("memberId")
+	memberID := c.Param("memberId")
 	req := new(UpdateMemberRequest)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
 	}
 
-	membership, err := mc.lawFirmRepo.GetMembershipByID(c.Request().Context(), membershipID)
+	member, err := mc.lawFirmRepo.GetMemberByID(c.Request().Context(), memberID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
-	if membership == nil {
+	if member == nil {
 		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
 	}
 
-	membership.RoleID = req.RoleID
+	member.RoleID = req.RoleID
 
-	if err := mc.lawFirmRepo.UpdateMembership(c.Request().Context(), membership); err != nil {
+	if err := mc.lawFirmRepo.UpdateMember(c.Request().Context(), member); err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
 	return c.JSON(http.StatusOK, constants.Response{
 		Status:  http.StatusOK,
 		Message: "Member updated successfully",
-		Data:    membership,
+		Data:    member,
 	})
 }
 
 func (mc *LawFirmController) HandleRemoveMember(c echo.Context) error {
-	membershipID := c.Param("memberId")
-	if err := mc.lawFirmRepo.DeleteMembership(c.Request().Context(), membershipID); err != nil {
+	memberID := c.Param("memberId")
+	if err := mc.lawFirmRepo.DeleteMember(c.Request().Context(), memberID); err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
 	return c.JSON(http.StatusOK, constants.Response{
 		Status:  http.StatusOK,
 		Message: "Member removed successfully",
+	})
+}
+
+func (lc *LawFirmController) HandleResetMemberPassword(c echo.Context) error {
+	lawFirmID := c.Param("id")
+	if lawFirmID == "" {
+		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
+	}
+
+	type ResetMemberPasswordRequest struct {
+		MemberID string `json:"memberId" validate:"required"`
+	}
+	req := new(ResetMemberPasswordRequest)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
+	}
+
+	member, err := lc.lawFirmRepo.GetMemberByID(c.Request().Context(), req.MemberID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	if member == nil {
+		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
+	}
+
+	if member.LawFirmID != lawFirmID {
+		return c.JSON(http.StatusForbidden, constants.ErrForbidden)
+	}
+
+	newPassword := ulid.Make().String()
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.Logger().Error("Failed to hash password:", err)
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	member.MemberHash = string(hashedPassword)
+	member.UpdatedAt = time.Now()
+
+	if err := lc.lawFirmRepo.UpdateMember(c.Request().Context(), member); err != nil {
+		c.Logger().Error("Failed to update member:", err)
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"status":  http.StatusOK,
+		"message": "Member password reset successfully",
+		"data": map[string]interface{}{
+			"memberId":    member.ID,
+			"memberEmail": member.MemberEmail,
+			"password":    newPassword,
+			"note":        "Please provide this password to the member",
+		},
 	})
 }

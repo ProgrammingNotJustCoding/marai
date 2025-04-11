@@ -31,19 +31,18 @@ func SetupRoutes(router *echo.Group,
 	authRouter.POST("/user/signup/mobile/verify", aC.HandleUserSignupMobileVerify)
 
 	authRouter.POST("/user/signin/mobile/otp", aC.HandleSigninMobileOTP)
-	authRouter.POST("/user/signin/mobile/verify", aC.HandleSigninMobileOTPVerify)
+	authRouter.POST("/user/signin/mobile/verify", aC.HandleSigninMobileVerify)
 	authRouter.POST("/user/signin/email/otp", aC.HandleSigninEmailOTP)
 	authRouter.POST("/user/signin/email/verify", aC.HandleSigninEmailVerify)
 	authRouter.POST("/user/signin/password", aC.HandleSigninPassword)
 	authRouter.POST("/user/forgot-password", aC.HandleForgotPassword)
 
 	authRouter.POST("/lawfirm/signup", aC.HandleLawFirmSignup)
-	authRouter.POST("/lawfirm/signup/email/verify", aC.HandleLawFirmSignupVerifyOTP)
-	authRouter.POST("/lawfirm/signup/mobile/verify", aC.HandleLawFirmSignupVerify)
-
-	authRouter.POST("/lawfirm/signin/mobile/otp", aC.HandleLawFirmSigninOTP)
-	authRouter.POST("/lawfirm/signin/mobile/verify", aC.HandleLawFirmSigninOTPVerify)
-	authRouter.POST("/lawfirm/signin/email/otp", aC.HandleLawFirmSigninEmailOTP)
+	authRouter.POST("/lawfirm/signup/email/verify", aC.HandleLawFirmSignupVerifyEmail)
+	authRouter.POST("/lawfirm/signup/mobile/verify", aC.HandleLawFirmSignupVerifyMobile)
+	authRouter.POST("/lawfirm/signin/mobile/otp", aC.HandleLawFirmSigninMobile)
+	authRouter.POST("/lawfirm/signin/mobile/verify", aC.HandleLawFirmSigninMobileVerify)
+	authRouter.POST("/lawfirm/signin/email/otp", aC.HandleLawFirmSigninEmail)
 	authRouter.POST("/lawfirm/signin/email/verify", aC.HandleLawFirmSigninEmailVerify)
 	authRouter.POST("/lawfirm/signin/password", aC.HandleLawFirmSigninPassword)
 	authRouter.POST("/lawfirm/forgot-password", aC.HandleLawFirmForgotPassword)
@@ -59,7 +58,6 @@ func SetupRoutes(router *echo.Group,
 	lawFirmRouter.PUT("/:id", lC.HandleUpdateLawFirm, mW.RequireLawFirmAdmin())
 	lawFirmRouter.DELETE("/:id", lC.HandleDeleteLawFirm, mW.RequireLawFirmOwnership())
 
-	// TODO: "/:id/members/new" can only be created from the lawfirm account. Random pwd and returned. argon hash will be saved
 	lawFirmRouter.POST("/:id/members/new", lC.HandleAddMember, mW.RequireLawFirmAdmin())
 	lawFirmRouter.POST("/:id/members/reset-pa", lC.HandleResetMemberPassword, mW.RequireLawFirmAdmin())
 	lawFirmRouter.GET("/:id/members", lC.HandleListMembers, mW.RequirePermission("read"))
