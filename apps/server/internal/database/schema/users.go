@@ -15,13 +15,10 @@ type User struct {
 	IsDeleted        bool   `json:"isDeleted,omitempty" gorm:"default:false"`
 	IsSuperAdmin     bool   `json:"isSuperAdmin,omitempty" gorm:"default:false"`
 
-	LawFirmMemberships []LawFirmMembership `json:"lawFirmMemberships,omitempty" gorm:"foreignKey:UserID"`
-	OwnedLawFirms      []LawFirm           `json:"ownedLawFirms,omitempty" gorm:"foreignKey:OwnerID"`
-
-	LastLoginAt *time.Time `json:"lastLoginAt,omitempty"`
-	CreatedAt   time.Time  `json:"createdAt,omitzero"`
-	UpdatedAt   time.Time  `json:"updatedAt,omitzero"`
-	DeletedAt   *time.Time `json:"deletedAt,omitempty"`
+	LastLoginAt time.Time `json:"lastLoginAt,omitempty"`
+	CreatedAt   time.Time `json:"createdAt,omitzero"`
+	UpdatedAt   time.Time `json:"updatedAt,omitzero"`
+	DeletedAt   time.Time `json:"deletedAt,omitempty"`
 }
 
 type UserPublicKey struct {

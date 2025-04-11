@@ -69,7 +69,7 @@ func NewFxApp() *fx.App {
 				database.NewMinioDB,
 				repositories.NewSessionRepository,
 				repositories.NewUserRepository,
-				repositories.NewLawFirmRepository,
+				repositories.NewLawFirmRepo,
 				repositories.NewContractsRepository,
 				controllers.NewAuthController,
 				controllers.NewLawFirmController,

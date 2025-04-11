@@ -79,11 +79,7 @@ func (cc *ContractsController) HandleCreateContract(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, req.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
-
+	isOwner := cc.lawFirmRepo.IsOwner(userID, req.LawFirmID)
 	if !hasPermission && !isOwner {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
 	}
@@ -129,10 +125,7 @@ func (cc *ContractsController) HandleGetContract(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	isOwner := cc.lawFirmRepo.IsOwner(userID, contract.LawFirmID)
 
 	isParty := false
 	for _, party := range contract.Parties {
@@ -162,10 +155,7 @@ func (cc *ContractsController) HandleListContracts(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, lawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	isOwner := cc.lawFirmRepo.IsOwner(userID, lawFirmID)
 
 	if !hasPermission && !isOwner {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
@@ -238,10 +228,7 @@ func (cc *ContractsController) HandleUpdateContract(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	isOwner := cc.lawFirmRepo.IsOwner(userID, contract.LawFirmID)
 
 	if !hasPermission && !isOwner {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
@@ -317,10 +304,7 @@ func (cc *ContractsController) HandleDeleteContract(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	isOwner := cc.lawFirmRepo.IsOwner(userID, contract.LawFirmID)
 
 	if !hasManagePermission && !isOwner {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
@@ -358,10 +342,9 @@ func (cc *ContractsController) HandleUploadContractFile(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+
+	isOwner := cc.lawFirmRepo.IsOwner(userID, contract.LawFirmID)
+
 	if !hasPermission && !isOwner {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
 	}
@@ -459,10 +442,9 @@ func (cc *ContractsController) HandleGetContractFile(c echo.Context) error {
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+
+	isOwner := cc.lawFirmRepo.IsOwner(userID, contract.LawFirmID)
+
 	isParty := false
 	for _, party := range contract.Parties {
 		if party.UserID == userID {
@@ -548,10 +530,7 @@ func (cc *ContractsController) HandleAddContractParty(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	isOwner := cc.lawFirmRepo.IsOwner(userID, contract.LawFirmID)
 
 	if !hasPermission && !isOwner {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
@@ -606,10 +585,7 @@ func (cc *ContractsController) HandleRemoveContractParty(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	isOwner := cc.lawFirmRepo.IsOwner(userID, contract.LawFirmID)
 
 	if !hasPermission && !isOwner {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
@@ -777,10 +753,7 @@ func (cc *ContractsController) HandleListContractFileVersions(c echo.Context) er
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	isOwner := cc.lawFirmRepo.IsOwner(userID, contract.LawFirmID)
 
 	isParty := false
 	for _, party := range contract.Parties {
@@ -828,10 +801,7 @@ func (cc *ContractsController) HandleGetContractFileVersion(c echo.Context) erro
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner, err := cc.lawFirmRepo.IsOwner(c.Request().Context(), userID, contract.LawFirmID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	isOwner := cc.lawFirmRepo.IsOwner(userID, contract.LawFirmID)
 
 	isParty := false
 	for _, party := range contract.Parties {

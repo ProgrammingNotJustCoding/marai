@@ -59,10 +59,7 @@ func (mw *Middlewares) RequireLawFirmOwnership() echo.MiddlewareFunc {
 			userID := c.Get("userID").(string)
 			lawFirmID := c.Param("id")
 
-			isOwner, err := mw.lawFirmRepo.IsOwner(c.Request().Context(), userID, lawFirmID)
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-			}
+			isOwner := mw.lawFirmRepo.IsOwner(userID, lawFirmID)
 
 			if !isOwner {
 				return c.JSON(http.StatusForbidden, constants.Error{
@@ -83,10 +80,7 @@ func (mw *Middlewares) RequireLawFirmAdmin() echo.MiddlewareFunc {
 			userID := c.Get("userID").(string)
 			lawFirmID := c.Param("id")
 
-			isOwner, err := mw.lawFirmRepo.IsOwner(c.Request().Context(), userID, lawFirmID)
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-			}
+			isOwner := mw.lawFirmRepo.IsOwner(userID, lawFirmID)
 
 			if isOwner {
 				return next(c)
@@ -116,10 +110,7 @@ func (mw *Middlewares) RequirePermission(permission string) echo.MiddlewareFunc 
 			userID := c.Get("userID").(string)
 			lawFirmID := c.Param("id")
 
-			isOwner, err := mw.lawFirmRepo.IsOwner(c.Request().Context(), userID, lawFirmID)
-			if err != nil {
-				return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-			}
+			isOwner := mw.lawFirmRepo.IsOwner(userID, lawFirmID)
 
 			if isOwner {
 				return next(c)
