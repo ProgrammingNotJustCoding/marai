@@ -52,7 +52,6 @@ func SetupRoutes(router *echo.Group,
 	lawFirmRouter.Use(mW.AuthMiddleware())
 
 	lawFirmRouter.GET("", lC.HandleGetAllLawFirms)
-	lawFirmRouter.GET("/me", lC.HandleListLawFirms)
 
 	lawFirmRouter.GET("/:id", lC.HandleGetLawFirm)
 	lawFirmRouter.PUT("/:id", lC.HandleUpdateLawFirm, mW.RequireLawFirmAdmin())

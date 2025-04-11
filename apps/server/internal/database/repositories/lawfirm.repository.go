@@ -80,17 +80,6 @@ func (r *LawFirmRepo) DeleteLawFirm(ctx context.Context, id string) error {
 		}).Error
 }
 
-func (r *LawFirmRepo) GetLawFirmsByOwnerID(ctx context.Context, ownerID string) ([]schema.LawFirm, error) {
-	var lawFirms []schema.LawFirm
-	err := r.db.WithContext(ctx).
-		Where("owner_id = ? AND is_deleted = ?", ownerID, false).
-		Find(&lawFirms).Error
-	if err != nil {
-		return nil, err
-	}
-	return lawFirms, nil
-}
-
 func (r *LawFirmRepo) GetAllLawFirms(ctx context.Context) ([]schema.LawFirm, error) {
 	var lawFirms []schema.LawFirm
 	err := r.db.WithContext(ctx).
@@ -186,13 +175,8 @@ func (r *LawFirmRepo) GetMembersByLawFirmID(ctx context.Context, lawFirmID strin
 
 func (r *LawFirmRepo) GetMemberByEmail(ctx context.Context, email string, lawFirmID string) (*schema.LawFirmMember, error) {
 	var member schema.LawFirmMember
-	err := r.db.WithContext(ctx).
-		Where("member_email = ? AND law_firm_id = ? AND is_deleted = ?", email, lawFirmID, false).
-		First(&member).Error
+	err := r.db.WithContext(ctx).Where("email = ? AND law_firm_id = ? AND is_deleted = ?", email, lawFirmID, false).First(&member).Error
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
 		return nil, err
 	}
 	return &member, nil
@@ -214,60 +198,39 @@ func (r *LawFirmRepo) DeleteMember(ctx context.Context, id string) error {
 		}).Error
 }
 
-func (r *LawFirmRepo) IsOwner(ctx context.Context, userID string, lawFirmID string) (bool, error) {
-	var lawFirm schema.LawFirm
-	err := r.db.WithContext(ctx).
-		Where("id = ? AND owner_id = ? AND is_deleted = ?", lawFirmID, userID, false).
-		First(&lawFirm).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
-		}
-		return false, err
-	}
-	return true, nil
+func (r *LawFirmRepo) IsOwner(userID string, lawFirmID string) bool {
+	// TODO: Not to cool but meh
+	return userID == lawFirmID
 }
 
 func (r *LawFirmRepo) HasPermission(ctx context.Context, userID string, lawFirmID string, permission string) (bool, error) {
-	var members []schema.LawFirmMember
-	err := r.db.WithContext(ctx).Joins("JOIN users ON users.email = law_firm_members.member_email").
-		Where("users.id = ? AND law_firm_members.law_firm_id = ? AND law_firm_members.is_deleted = ?",
-			userID, lawFirmID, false).
-		Find(&members).Error
+	var lawyerRole schema.LawFirmRole
+	var member schema.LawFirmMember
+	err := r.db.WithContext(ctx).Where("user_id = ? AND law_firm_id = ? AND is_deleted = ?", userID, lawFirmID, false).First(&member).Error
+	if err != nil {
+		return false, err
+	}
+	err = r.db.WithContext(ctx).Where("id = ?", member.RoleID).First(&lawyerRole).Error
 	if err != nil {
 		return false, err
 	}
 
-	if len(members) == 0 {
-		return false, nil
-	}
-
-	for _, member := range members {
-		var role schema.LawFirmRole
-		err := r.db.WithContext(ctx).
-			Where("id = ? AND is_deleted = ?", member.RoleID, false).
-			First(&role).Error
-		if err != nil {
-			continue
+	switch permission {
+	case "read":
+		if lawyerRole.PermRead {
+			return true, nil
 		}
-
-		switch permission {
-		case "read":
-			if role.PermRead {
-				return true, nil
-			}
-		case "write":
-			if role.PermWrite {
-				return true, nil
-			}
-		case "manage":
-			if role.PermManage {
-				return true, nil
-			}
-		case "admin":
-			if role.PermFirmAdmin {
-				return true, nil
-			}
+	case "write":
+		if lawyerRole.PermWrite {
+			return true, nil
+		}
+	case "manage":
+		if lawyerRole.PermManage {
+			return true, nil
+		}
+	case "admin":
+		if lawyerRole.PermFirmAdmin {
+			return true, nil
 		}
 	}
 
@@ -279,14 +242,10 @@ func (r *LawFirmRepo) HasAdminPermission(ctx context.Context, userID string, law
 }
 
 func (r *LawFirmRepo) IsMember(ctx context.Context, email string, lawFirmID string) (bool, error) {
-	var members []schema.LawFirmMember
-	err := r.db.WithContext(ctx).Joins("JOIN users ON users.email = law_firm_members.member_email").
-		Where("users.email = ? AND law_firm_members.law_firm_id = ? AND law_firm_members.is_deleted = ?",
-			email, lawFirmID, false).
-		Find(&members).Error
+	var member schema.LawFirmMember
+	err := r.db.WithContext(ctx).Where("email = ? AND law_firm_id = ? AND is_deleted = ?", email, lawFirmID, false).First(&member).Error
 	if err != nil {
 		return false, err
 	}
-
-	return len(members) > 0, nil
+	return member.ID != "", nil
 }

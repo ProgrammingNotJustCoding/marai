@@ -97,20 +97,6 @@ func (lc *LawFirmController) HandleGetLawFirm(c echo.Context) error {
 	})
 }
 
-func (lc *LawFirmController) HandleListLawFirms(c echo.Context) error {
-	userID := c.Get("userID").(string)
-	lawFirms, err := lc.lawFirmRepo.GetLawFirmsByOwnerID(c.Request().Context(), userID)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
-
-	return c.JSON(http.StatusOK, constants.Response{
-		Status:  http.StatusOK,
-		Message: "Law firms retrieved successfully",
-		Data:    lawFirms,
-	})
-}
-
 func (lc *LawFirmController) HandleUpdateLawFirm(c echo.Context) error {
 	id := c.Param("id")
 	req := new(UpdateLawFirmRequest)

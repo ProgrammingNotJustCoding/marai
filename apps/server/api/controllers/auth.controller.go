@@ -118,7 +118,6 @@ func (a *AuthController) sendEmailOtp(c echo.Context, email string) error {
 }
 
 func (a *AuthController) verifyEmailOtp(c echo.Context, email string, otp string) (isValid bool, error error) {
-
 	params := &verify.CreateVerificationCheckParams{}
 	params.SetTo(email)
 	params.SetCode(otp)
@@ -812,7 +811,6 @@ func (a *AuthController) HandleLawFirmSigninEmail(c echo.Context) error {
 			"email": lawfirm.Email,
 		},
 	})
-
 }
 
 func (a *AuthController) HandleLawFirmSigninEmailVerify(c echo.Context) error {
