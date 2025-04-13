@@ -38,7 +38,6 @@ const LawFirmRegistrationForm: React.FC = () => {
       const response = await instance.post(`/lawfirms`, formData, {
         headers: {
           "Content-Type": "application/json",
-          withCredentials: true,
         },
       });
 
