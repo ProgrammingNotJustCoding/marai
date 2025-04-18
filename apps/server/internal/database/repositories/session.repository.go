@@ -24,13 +24,14 @@ func NewSessionRepository(db *gorm.DB) *SessionRepo {
 	}
 }
 
-func (r *SessionRepo) CreateSession(ctx context.Context, userID string) (*schema.Session, error) {
+func (r *SessionRepo) CreateSession(ctx context.Context, userID string, sessionType schema.SessionType) (*schema.Session, error) {
 	session := &schema.Session{
-		ID:        ulid.Make().String(),
-		UserID:    userID,
-		ExpiresAt: time.Now().Add(24 * 7 * time.Hour),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:          ulid.Make().String(),
+		UserID:      userID,
+		SessionType: sessionType,
+		ExpiresAt:   time.Now().Add(24 * 7 * time.Hour),
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
 	}
 
 	if err := r.db.WithContext(ctx).Create(session).Error; err != nil {

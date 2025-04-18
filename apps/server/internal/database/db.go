@@ -44,7 +44,7 @@ func RunPostgresMigrations(db *gorm.DB) error {
 		&schema.Session{},
 		&schema.LawFirm{},
 		&schema.LawFirmRole{},
-		&schema.LawFirmMembership{},
+		&schema.LawFirmMember{},
 		&schema.Contract{},
 		&schema.ContractParty{},
 		&schema.SignatureEvent{},
