@@ -1,0 +1,3 @@
+from .legal_chat import handle_legal_chat
+from .contract_gen import handle_contract_generation
+from .contract_analysis import handle_contract_analysis
