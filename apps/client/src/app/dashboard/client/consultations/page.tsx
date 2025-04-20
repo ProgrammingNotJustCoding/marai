@@ -67,7 +67,7 @@ export default function ConsultationsPage() {
           <div className="grid gap-6">
             {consultations.map((consultation) => (
               <Link
-                href={`/dashboard/consultations/${consultation.id}`}
+                href={`/dashboard/client/consultations/${consultation.id}`}
                 key={consultation.id}
                 className="block"
               >

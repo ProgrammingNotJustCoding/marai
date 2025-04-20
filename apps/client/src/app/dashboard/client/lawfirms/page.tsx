@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
-import LawfirmFilters from "@/components/dashboard/LawfirmFilters";
-import LawfirmsList from "@/components/dashboard/LawfirmsList";
+import LawfirmFilters from "@/components/dashboard/client/LawfirmFilters";
+import LawfirmsList from "@/components/dashboard/client/LawfirmsList";
 import { motion } from "framer-motion";
 
 export default function Dashboard() {

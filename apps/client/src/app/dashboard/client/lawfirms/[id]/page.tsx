@@ -195,7 +195,9 @@ const LawFirmProfilePage: React.FC<LawFirmProfilePageProps> = ({ params }) => {
                 </div>
                 <button
                   onClick={() =>
-                    router.push(`/dashboard/book-consultation/${lawFirm.id}`)
+                    router.push(
+                      `/dashboard/client/book-consultation/${lawFirm.id}`,
+                    )
                   }
                   className="mt-4 md:mt-0 px-6 py-3 bg-green-600 hover:bg-green-700 rounded text-white transition-colors"
                 >

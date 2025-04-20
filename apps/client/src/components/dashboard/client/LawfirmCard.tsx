@@ -97,7 +97,7 @@ const LawfirmCard: React.FC<LawfirmProps> = ({
 
           <div className="mt-auto pt-4">
             <button
-              onClick={() => router.push(`/dashboard/lawfirms/${id}`)}
+              onClick={() => router.push(`/dashboard/client/lawfirms/${id}`)}
               className="w-full py-2 bg-green-600 hover:bg-green-700 rounded text-white transition-colors"
             >
               View Profile

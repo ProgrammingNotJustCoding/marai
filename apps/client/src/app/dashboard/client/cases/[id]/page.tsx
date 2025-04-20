@@ -4,12 +4,12 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import DashboardLayout from "@/layouts/DashboardLayout";
-import CaseHeader from "@/components/dashboard/CaseHeader";
-import TabNavigation from "@/components/dashboard/TabNavigation";
-import OverviewTab from "@/components/dashboard/OverviewTab";
-import DocumentsTab from "@/components/dashboard/DocumentsTab";
-import MessagesTab from "@/components/dashboard/MessagesTab";
-import BillingTab from "@/components/dashboard/BillingTab";
+import CaseHeader from "@/components/dashboard/client/CaseHeader";
+import TabNavigation from "@/components/dashboard/client/TabNavigation";
+import OverviewTab from "@/components/dashboard/client/OverviewTab";
+import DocumentsTab from "@/components/dashboard/client/DocumentsTab";
+import MessagesTab from "@/components/dashboard/client/MessagesTab";
+import BillingTab from "@/components/dashboard/client/BillingTab";
 
 const getCaseById = (id: string) => {
   return {

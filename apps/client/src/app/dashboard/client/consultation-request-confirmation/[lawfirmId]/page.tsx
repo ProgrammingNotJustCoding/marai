@@ -112,14 +112,14 @@ const ConsultationRequestConfirmationPage: React.FC<Props> = ({ params }) => {
 
             <div className="flex flex-col sm:flex-row justify-between gap-4">
               <button
-                onClick={() => router.push("/dashboard")}
+                onClick={() => router.push("/dashboard/client")}
                 className="px-6 py-2 bg-gray-200 dark:bg-neutral-800 hover:bg-gray-300 dark:hover:bg-neutral-700 rounded-md text-gray-800 dark:text-white transition-colors"
               >
                 Return to Dashboard
               </button>
 
               <button
-                onClick={() => router.push("/dashboard/consultations")}
+                onClick={() => router.push("/dashboard/client/consultations")}
                 className="px-6 py-2 bg-green-600 hover:bg-green-700 rounded-md text-white transition-colors flex items-center justify-center"
               >
                 View My Consultations <FiArrowRight className="ml-2" />

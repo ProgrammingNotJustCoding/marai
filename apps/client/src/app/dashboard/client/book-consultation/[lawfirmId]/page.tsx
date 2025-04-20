@@ -56,7 +56,7 @@ const BookConsultationPage: React.FC<BookConsultationPageProps> = ({
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     router.push(
-      `/dashboard/consultation-request-confirmation/${lawFirm.id}?date=${selectedDate}&time=${selectedTime}`,
+      `/dashboard/client/consultation-request-confirmation/${lawFirm.id}?date=${selectedDate}&time=${selectedTime}`,
     );
   };
 

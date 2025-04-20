@@ -60,7 +60,7 @@ export default function CasesPage() {
           <div className="grid gap-6">
             {cases.map((caseItem) => (
               <Link
-                href={`/dashboard/cases/${caseItem.id}`}
+                href={`/dashboard/client/cases/${caseItem.id}`}
                 key={caseItem.id}
                 className="block"
               >
@@ -110,7 +110,7 @@ export default function CasesPage() {
             <p className="text-gray-600 dark:text-neutral-400 text-lg">
               You don't have any active cases yet.
             </p>
-            <Link href="/dashboard/consultations">
+            <Link href="/dashboard/client/consultations">
               <button className="mt-4 px-6 py-2 bg-green-600 hover:bg-green-700 rounded text-white transition-colors">
                 Schedule a Consultation
               </button>
