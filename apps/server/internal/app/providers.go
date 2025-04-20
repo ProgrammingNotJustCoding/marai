@@ -25,7 +25,7 @@ type App struct {
 	LawfirmController      *controllers.LawFirmController
 	ContractController     *controllers.ContractsController
 	KeysController         *controllers.KeysController
-	ConsultationController *controllers.ConsultationController // Added ConsultationController
+	ConsultationController *controllers.ConsultationController
 	RoleCache              *middlewares.RoleCache
 	StartTime              time.Time
 }
@@ -41,7 +41,7 @@ func NewApp(
 	ContractController *controllers.ContractsController,
 	KeysController *controllers.KeysController,
 	RoleCache *middlewares.RoleCache,
-	ConsultationController *controllers.ConsultationController, // Added ConsultationController
+	ConsultationController *controllers.ConsultationController,
 ) *App {
 	e := echo.New()
 
@@ -57,7 +57,7 @@ func NewApp(
 		ContractController:     ContractController,
 		KeysController:         KeysController,
 		RoleCache:              RoleCache,
-		ConsultationController: ConsultationController, // Added ConsultationController
+		ConsultationController: ConsultationController,
 		StartTime:              time.Now(),
 	}
 }
@@ -74,12 +74,12 @@ func NewFxApp() *fx.App {
 				repositories.NewUserRepository,
 				repositories.NewLawFirmRepo,
 				repositories.NewContractsRepository,
-				repositories.NewConsultationRepository, // Added ConsultationRepository provider
+				repositories.NewConsultationRepository,
 				controllers.NewAuthController,
 				controllers.NewLawFirmController,
 				controllers.NewContractsController,
 				controllers.NewKeysController,
-				controllers.NewConsultationController, // Added ConsultationController provider
+				controllers.NewConsultationController,
 				middlewares.NewRoleCache,
 				middlewares.NewMiddlewares,
 				NewApp,

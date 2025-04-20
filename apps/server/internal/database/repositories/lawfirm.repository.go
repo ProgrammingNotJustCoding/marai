@@ -200,7 +200,7 @@ func (r *LawFirmRepo) DeleteMember(ctx context.Context, id string) error {
 }
 
 func (r *LawFirmRepo) IsOwner(userID string, lawFirmID string) bool {
-	// TODO: Not to cool but meh
+
 	return userID == lawFirmID
 }
 

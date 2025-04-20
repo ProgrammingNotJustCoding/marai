@@ -15,17 +15,15 @@ const (
 	StatusAcceptedByFirm   ConsultationStatus = "accepted-by-lawfirm"
 	StatusAssigned         ConsultationStatus = "assigned"
 	StatusAcceptedByLawyer ConsultationStatus = "accepted-by-lawyer"
-	StatusConfirmed        ConsultationStatus = "confirmed" // Fees agreed by user
-	StatusTaken            ConsultationStatus = "taken"     // Marked as case by lawyer
+	StatusConfirmed        ConsultationStatus = "confirmed"
+	StatusTaken            ConsultationStatus = "taken"
 	StatusRejectedByFirm   ConsultationStatus = "rejected-by-lawfirm"
 	StatusRejectedByLawyer ConsultationStatus = "rejected-by-lawyer"
-	StatusClosed           ConsultationStatus = "closed" // Case completed or terminated
+	StatusClosed           ConsultationStatus = "closed"
 )
 
-// FeeMap represents the map[string]int type for GORM
 type FeeMap map[string]int
 
-// Value implements the driver.Valuer interface for FeeMap
 func (fm FeeMap) Value() (driver.Value, error) {
 	if fm == nil {
 		return nil, nil
@@ -33,7 +31,6 @@ func (fm FeeMap) Value() (driver.Value, error) {
 	return json.Marshal(fm)
 }
 
-// Scan implements the sql.Scanner interface for FeeMap
 func (fm *FeeMap) Scan(value interface{}) error {
 	if value == nil {
 		*fm = nil
@@ -60,7 +57,7 @@ type Consultation struct {
 
 	User           User           `json:"user,omitempty" gorm:"foreignKey:UserID;references:ID"`
 	LawFirm        LawFirm        `json:"lawFirm,omitempty" gorm:"foreignKey:LawFirmID;references:ID"`
-	AssignedLawyer *LawFirmMember `json:"assignedLawyer,omitempty" gorm:"foreignKey:AssignedLawyerID;references:ID"` // Assuming LawFirmMember ID is the lawyer's ID
+	AssignedLawyer *LawFirmMember `json:"assignedLawyer,omitempty" gorm:"foreignKey:AssignedLawyerID;references:ID"`
 	Documents      []Document     `json:"documents,omitempty" gorm:"foreignKey:ConsultationID"`
 	ChatMessages   []ChatMessage  `json:"chatMessages,omitempty" gorm:"foreignKey:ConsultationID"`
 }

@@ -53,7 +53,7 @@ func Setup(app *App) {
 		app.LawfirmController,
 		app.ContractController,
 		app.KeysController,
-		app.ConsultationController, // Added ConsultationController
+		app.ConsultationController,
 		app.StartTime,
 	)
 }

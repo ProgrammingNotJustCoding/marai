@@ -8,7 +8,7 @@ type Contract struct {
 	ID             string     `json:"id" gorm:"primaryKey;type:varchar(36)"`
 	Title          string     `json:"title" gorm:"not null"`
 	Description    string     `json:"description"`
-	Content        string     `json:"content,omitempty" gorm:"type:text"` // Changed to TEXT for potentially large content + hashes
+	Content        string     `json:"content,omitempty" gorm:"type:text"`
 	FileURL        string     `json:"fileUrl,omitempty"`
 	FilePath       string     `json:"filePath,omitempty"`
 	FileHash       string     `json:"fileHash,omitempty"`
@@ -19,7 +19,7 @@ type Contract struct {
 	IsTemplate     bool       `json:"isTemplate" gorm:"default:false"`
 	ExpiresAt      *time.Time `json:"expiresAt,omitempty"`
 	IsDeleted      bool       `json:"isDeleted" gorm:"default:false"`
-	DocumentHashes string     `json:"documentHashes,omitempty" gorm:"type:text"` // Comma-separated slugified documentname_hash
+	DocumentHashes string     `json:"documentHashes,omitempty" gorm:"type:text"`
 	CreatedAt      time.Time  `json:"createdAt"`
 	UpdatedAt      time.Time  `json:"updatedAt"`
 	DeletedAt      *time.Time `json:"deletedAt,omitempty"`
