@@ -176,8 +176,12 @@ func (r *LawFirmRepo) GetMembersByLawFirmID(ctx context.Context, lawFirmID strin
 
 func (r *LawFirmRepo) GetMemberByEmail(ctx context.Context, email string, lawFirmID string) (*schema.LawFirmMember, error) {
 	var member schema.LawFirmMember
-	err := r.db.WithContext(ctx).Where("email = ? AND law_firm_id = ? AND is_deleted = ?", email, lawFirmID, false).First(&member).Error
+	err := r.db.WithContext(ctx).Where("member_email = ? AND law_firm_id = ? AND is_deleted = ?", email, lawFirmID, false).First(&member).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
 		return nil, err
 	}
 	return &member, nil

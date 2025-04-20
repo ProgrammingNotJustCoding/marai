@@ -5,12 +5,12 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/consultations/{{consultationId}}/chat?limit=50
+  url: {{BaseUrl}}/consultations/01JSA2JSX58BBVBND21P97VFN5/chat?limit=50
   body: none
   auth: none
 }
 
-query {
+params:query {
   limit: 50
   ~after: 2025-04-20T10:00:00Z
 }

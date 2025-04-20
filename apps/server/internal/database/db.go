@@ -49,6 +49,9 @@ func RunPostgresMigrations(db *gorm.DB) error {
 		&schema.ContractParty{},
 		&schema.SignatureEvent{},
 		&schema.UserPublicKey{},
+		&schema.Consultation{},
+		&schema.Document{},
+		&schema.ChatMessage{},
 	)
 	if err != nil {
 		slog.Error("Error running migrations", slog.String("error", err.Error()))

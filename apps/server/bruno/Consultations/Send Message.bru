@@ -5,9 +5,13 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/api/consultations/{{consultationId}}/chat
+  url: {{BaseUrl}}/consultations/01JSA2JSX58BBVBND21P97VFN5/chat
   body: json
   auth: none
+}
+
+headers {
+  Cookie: {{LawfirmMemberCookie}}
 }
 
 body:json {
@@ -15,4 +19,3 @@ body:json {
     "message": "Hello, I have reviewed the initial details. Could you please provide the specific property address?"
   }
 }
-

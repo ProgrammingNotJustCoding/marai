@@ -21,6 +21,24 @@ func NewConsultationRepository(db *gorm.DB) *ConsultationRepo {
 }
 
 func (r *ConsultationRepo) CreateConsultation(ctx context.Context, userID, lawFirmID, caseDetails string) (*schema.Consultation, error) {
+	var userCount, firmCount int64
+
+	if err := r.db.Model(&schema.User{}).Where("id = ?", userID).Count(&userCount).Error; err != nil {
+		return nil, fmt.Errorf("error checking user existence: %w", err)
+	}
+
+	if userCount == 0 {
+		return nil, fmt.Errorf("user with ID %s does not exist", userID)
+	}
+
+	if err := r.db.Model(&schema.LawFirm{}).Where("id = ?", lawFirmID).Count(&firmCount).Error; err != nil {
+		return nil, fmt.Errorf("error checking law firm existence: %w", err)
+	}
+
+	if firmCount == 0 {
+		return nil, fmt.Errorf("law firm with ID %s does not exist", lawFirmID)
+	}
+
 	consultation := &schema.Consultation{
 		ID:          ulid.Make().String(),
 		UserID:      userID,
@@ -134,9 +152,20 @@ func (r *ConsultationRepo) AddDocument(ctx context.Context, doc *schema.Document
 	return r.db.WithContext(ctx).Create(doc).Error
 }
 
+func (r *ConsultationRepo) ListDocumentsByConsultation(ctx context.Context, consultationID string) ([]schema.Document, error) {
+	var docs []schema.Document
+	err := r.db.WithContext(ctx).
+		Where("consultation_id = ?", consultationID).
+		Order("created_at desc").
+		Find(&docs).Error
+
+	return docs, err
+}
+
 func (r *ConsultationRepo) GetDocumentByID(ctx context.Context, docID string) (*schema.Document, error) {
 	var doc schema.Document
-	err := r.db.WithContext(ctx).Preload("UploadedBy").First(&doc, "id = ?", docID).Error
+	err := r.db.WithContext(ctx).
+		First(&doc, "id = ?", docID).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -144,16 +173,6 @@ func (r *ConsultationRepo) GetDocumentByID(ctx context.Context, docID string) (*
 		return nil, err
 	}
 	return &doc, nil
-}
-
-func (r *ConsultationRepo) ListDocumentsByConsultation(ctx context.Context, consultationID string) ([]schema.Document, error) {
-	var docs []schema.Document
-	err := r.db.WithContext(ctx).
-		Preload("UploadedBy").
-		Where("consultation_id = ?", consultationID).
-		Order("created_at desc").
-		Find(&docs).Error
-	return docs, err
 }
 
 func (r *ConsultationRepo) GetDocumentHashesForContract(ctx context.Context, consultationID string) (string, error) {
@@ -181,6 +200,14 @@ func (r *ConsultationRepo) AddChatMessage(ctx context.Context, msg *schema.ChatM
 	if msg.ID == "" {
 		msg.ID = ulid.Make().String()
 	}
+
+	if msg.SenderType == "" {
+		msg.SenderType = "user"
+	}
+	if msg.ReceiverType == "" {
+		msg.ReceiverType = "user"
+	}
+
 	msg.Timestamp = time.Now()
 	return r.db.WithContext(ctx).Create(msg).Error
 }
@@ -188,7 +215,6 @@ func (r *ConsultationRepo) AddChatMessage(ctx context.Context, msg *schema.ChatM
 func (r *ConsultationRepo) ListChatMessages(ctx context.Context, consultationID string, after *time.Time, limit int) ([]schema.ChatMessage, error) {
 	var messages []schema.ChatMessage
 	query := r.db.WithContext(ctx).
-		Preload("Sender").
 		Where("consultation_id = ?", consultationID)
 
 	if after != nil {
@@ -202,7 +228,11 @@ func (r *ConsultationRepo) ListChatMessages(ctx context.Context, consultationID 
 	}
 
 	err := query.Find(&messages).Error
-	return messages, err
+	if err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }
 
 func (r *ConsultationRepo) MarkMessagesAsRead(ctx context.Context, consultationID, receiverID string) error {

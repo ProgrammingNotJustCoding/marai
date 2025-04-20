@@ -9,11 +9,11 @@ type ChatMessage struct {
 	ConsultationID string    `json:"consultationId" gorm:"index;not null"`
 	SenderID       string    `json:"senderId" gorm:"index;not null"`
 	ReceiverID     string    `json:"receiverId" gorm:"index;not null"`
+	SenderType     string    `json:"senderType" gorm:"type:varchar(20);not null;default:'user'"`   // 'user' or 'lawyer'
+	ReceiverType   string    `json:"receiverType" gorm:"type:varchar(20);not null;default:'user'"` // 'user' or 'lawyer'
 	Message        string    `json:"message" gorm:"type:text;not null"`
 	Timestamp      time.Time `json:"timestamp" gorm:"index"`
 	IsRead         bool      `json:"isRead" gorm:"default:false"`
 
 	Consultation Consultation `json:"-" gorm:"foreignKey:ConsultationID"`
-	Sender       User         `json:"sender,omitempty" gorm:"foreignKey:SenderID;references:ID"`
-	Receiver     User         `json:"receiver,omitempty" gorm:"foreignKey:ReceiverID;references:ID"`
 }

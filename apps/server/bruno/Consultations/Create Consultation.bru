@@ -5,14 +5,18 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/api/consultations
+  url: {{BaseUrl}}/consultations
   body: json
   auth: none
 }
 
+headers {
+  Cookie: {{Cookie}}
+}
+
 body:json {
   {
-    "lawFirmId": "",
+    "lawFirmId": "01JS9SBHVJ204TY0VF4RWY43J3",
     "caseDetails": "Need help with a property dispute regarding inheritance."
   }
 }

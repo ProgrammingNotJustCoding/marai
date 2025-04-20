@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"log/slog"
 	"marai/api/constants"
 	"marai/internal/config"
 	"marai/internal/database/repositories"
@@ -77,7 +78,8 @@ func (cc *ConsultationController) HandleCreateConsultation(c echo.Context) error
 
 func (cc *ConsultationController) HandleListConsultations(c echo.Context) error {
 	userID := c.Get("userID").(string)
-	userType := c.Get("userType").(schema.SessionType)
+	session := c.Get("session").(*schema.Session)
+	userType := session.SessionType
 
 	page, _ := strconv.Atoi(c.QueryParam("page"))
 	pageSize, _ := strconv.Atoi(c.QueryParam("pageSize"))
@@ -142,7 +144,8 @@ func (cc *ConsultationController) HandleListConsultations(c echo.Context) error 
 func (cc *ConsultationController) HandleGetConsultation(c echo.Context) error {
 	consultationID := c.Param("id")
 	userID := c.Get("userID").(string)
-	userType := c.Get("userType").(schema.SessionType)
+	session := c.Get("session").(*schema.Session)
+	userType := session.SessionType
 
 	consultation, err := cc.consultationRepo.GetConsultationByID(c.Request().Context(), consultationID)
 	if err != nil {
@@ -267,6 +270,7 @@ func (cc *ConsultationController) HandleAcceptByLawyer(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
 	}
 
+	slog.Info(*consultation.AssignedLawyerID, lawyerID)
 	if consultation.AssignedLawyerID == nil || *consultation.AssignedLawyerID != lawyerID {
 		return c.JSON(http.StatusForbidden, constants.ErrForbidden)
 	}
@@ -329,13 +333,13 @@ func (cc *ConsultationController) HandleConfirmFees(c echo.Context) error {
 	userID := c.Get("userID").(string)
 
 	consultation, err := cc.consultationRepo.GetConsultationByID(c.Request().Context(), consultationID)
+	slog.Info(consultation.UserID, userID)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 	if consultation == nil {
 		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
 	}
-
 	if consultation.UserID != userID {
 		return c.JSON(http.StatusForbidden, constants.ErrForbidden)
 	}
@@ -413,7 +417,8 @@ func (cc *ConsultationController) HandleMarkAsTaken(c echo.Context) error {
 func (cc *ConsultationController) HandleUploadDocument(c echo.Context) error {
 	consultationID := c.Param("id")
 	uploaderID := c.Get("userID").(string)
-	userType := c.Get("userType").(schema.SessionType)
+	session := c.Get("session").(*schema.Session)
+	userType := session.SessionType
 
 	consultation, err := cc.consultationRepo.GetConsultationByID(c.Request().Context(), consultationID)
 	if err != nil {
@@ -433,7 +438,7 @@ func (cc *ConsultationController) HandleUploadDocument(c echo.Context) error {
 		return c.JSON(http.StatusForbidden, constants.ErrForbidden)
 	}
 
-	file, err := c.FormFile("document")
+	file, err := c.FormFile("file")
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, constants.Error{Status: 400, Message: "Bad Request", PrettyMessage: "Missing 'document' file in form data."})
 	}
@@ -464,6 +469,7 @@ func (cc *ConsultationController) HandleUploadDocument(c echo.Context) error {
 		FilePath:       objectPath,
 		FileHash:       fileHash,
 		UploadedByID:   uploaderID,
+		UploaderType:   string(userType),
 	}
 
 	if err := cc.consultationRepo.AddDocument(c.Request().Context(), doc); err != nil {
@@ -484,7 +490,8 @@ func (cc *ConsultationController) HandleUploadDocument(c echo.Context) error {
 func (cc *ConsultationController) HandleListDocuments(c echo.Context) error {
 	consultationID := c.Param("id")
 	userID := c.Get("userID").(string)
-	userType := c.Get("userType").(schema.SessionType)
+	session := c.Get("session").(*schema.Session)
+	userType := session.SessionType
 
 	consultation, err := cc.consultationRepo.GetConsultationByID(c.Request().Context(), consultationID)
 	if err != nil {
@@ -533,7 +540,8 @@ func (cc *ConsultationController) HandleGetDocument(c echo.Context) error {
 	consultationID := c.Param("id")
 	docID := c.Param("docId")
 	userID := c.Get("userID").(string)
-	userType := c.Get("userType").(schema.SessionType)
+	session := c.Get("session").(*schema.Session)
+	userType := session.SessionType
 
 	doc, err := cc.consultationRepo.GetDocumentByID(c.Request().Context(), docID)
 	if err != nil {
@@ -589,7 +597,8 @@ func (cc *ConsultationController) HandleGetDocument(c echo.Context) error {
 func (cc *ConsultationController) HandleSendMessage(c echo.Context) error {
 	consultationID := c.Param("id")
 	senderID := c.Get("userID").(string)
-	userType := c.Get("userType").(schema.SessionType)
+	session := c.Get("session").(*schema.Session)
+	userType := session.SessionType
 	req := new(SendMessageRequest)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
@@ -629,13 +638,43 @@ func (cc *ConsultationController) HandleSendMessage(c echo.Context) error {
 		return c.JSON(http.StatusConflict, constants.Error{Status: 409, Message: "Conflict", PrettyMessage: "Chat is only available after the lawyer accepts the consultation."})
 	}
 
+	var senderType, receiverType string
+	allowed = false
+
+	if userType == "user" && consultation.UserID == senderID {
+		if consultation.AssignedLawyerID != nil {
+			receiverID = *consultation.AssignedLawyerID
+			senderType = "user"
+			receiverType = "lawyer"
+			allowed = true
+		} else {
+			return c.JSON(http.StatusConflict, constants.Error{
+				Status:        409,
+				Message:       "Conflict",
+				PrettyMessage: "Cannot send message until a lawyer is assigned.",
+			})
+		}
+	} else if userType == "lawyer" && consultation.AssignedLawyerID != nil && *consultation.AssignedLawyerID == senderID {
+		receiverID = consultation.UserID
+		senderType = "lawyer"
+		receiverType = "user"
+		allowed = true
+	} else if userType == "lawfirm" {
+		allowed = false
+	}
+
+	if !allowed {
+		return c.JSON(http.StatusForbidden, constants.ErrForbidden)
+	}
+
 	msg := &schema.ChatMessage{
 		ConsultationID: consultationID,
 		SenderID:       senderID,
 		ReceiverID:     receiverID,
+		SenderType:     senderType,
+		ReceiverType:   receiverType,
 		Message:        req.Message,
 	}
-
 	if err := cc.consultationRepo.AddChatMessage(c.Request().Context(), msg); err != nil {
 		c.Logger().Error("Failed to send message:", err)
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
@@ -652,7 +691,8 @@ func (cc *ConsultationController) HandleSendMessage(c echo.Context) error {
 func (cc *ConsultationController) HandleListMessages(c echo.Context) error {
 	consultationID := c.Param("id")
 	userID := c.Get("userID").(string)
-	userType := c.Get("userType").(schema.SessionType)
+	session := c.Get("session").(*schema.Session)
+	userType := session.SessionType
 
 	limit, _ := strconv.Atoi(c.QueryParam("limit"))
 	if limit <= 0 || limit > 200 {

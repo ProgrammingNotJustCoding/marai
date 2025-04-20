@@ -11,9 +11,9 @@ type Document struct {
 	FilePath       string    `json:"filePath" gorm:"not null"`
 	FileHash       string    `json:"fileHash" gorm:"not null"`
 	UploadedByID   string    `json:"uploadedById" gorm:"index;not null"`
+	UploaderType   string    `json:"uploaderType" gorm:"type:varchar(20);not null"`
 	CreatedAt      time.Time `json:"createdAt"`
 	UpdatedAt      time.Time `json:"updatedAt"`
 
 	Consultation Consultation `json:"-" gorm:"foreignKey:ConsultationID"`
-	UploadedBy   User         `json:"uploadedBy,omitempty" gorm:"foreignKey:UploadedByID;references:ID"`
 }
