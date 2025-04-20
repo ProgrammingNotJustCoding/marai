@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"log/slog"
 	"marai/api/constants"
 	"net/http"
 	"sync"
@@ -74,12 +75,14 @@ func (mw *Middlewares) RequireLawFirmOwnership() echo.MiddlewareFunc {
 	}
 }
 
+// TODO: DONT FIX THIS TO :id its bad
 func (mw *Middlewares) RequireLawFirmAdmin() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			userID := c.Get("userID").(string)
 			lawFirmID := c.Param("id")
 
+			slog.Info(userID, lawFirmID)
 			isOwner := mw.lawFirmRepo.IsOwner(userID, lawFirmID)
 
 			if isOwner {

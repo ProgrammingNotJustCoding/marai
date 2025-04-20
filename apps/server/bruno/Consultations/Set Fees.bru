@@ -5,9 +5,13 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/api/consultations/{{consultationId}}/set-fees
+  url: {{BaseUrl}}/consultations/01JSA2JSX58BBVBND21P97VFN5/set-fees
   body: json
   auth: none
+}
+
+headers {
+  Cookie: {{LawfirmMemberCookie}}
 }
 
 body:json {
@@ -19,4 +23,3 @@ body:json {
     }
   }
 }
-

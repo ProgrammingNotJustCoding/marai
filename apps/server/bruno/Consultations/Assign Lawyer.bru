@@ -5,13 +5,17 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/api/consultations/{{consultationId}}/assign-lawyer
+  url: {{BaseUrl}}/consultations/01JSA2JSX58BBVBND21P97VFN5/assign-lawyer
   body: json
   auth: none
 }
 
+headers {
+  Cookie: {{LawfirmCookie}}
+}
+
 body:json {
   {
-    "lawyerId": "{{lawyerId_ToAssign}}"
+    "lawyerId": "01JS9Z5VSJWJA8BKY37NDXKACA"
   }
 }

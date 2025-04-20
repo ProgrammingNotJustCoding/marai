@@ -5,8 +5,11 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/consultations/{{consultationId}}/documents
+  url: {{BaseUrl}}/consultations/01JSA2JSX58BBVBND21P97VFN5/documents
   body: none
   auth: none
 }
 
+headers {
+  Cookie: {{LawfirmMemberCookie}}
+}

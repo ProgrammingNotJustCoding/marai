@@ -5,7 +5,11 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/api/consultations/{{consultationId}}/mark-taken
+  url: {{BaseUrl}}/consultations/01JSA2JSX58BBVBND21P97VFN5/mark-taken
   body: none
   auth: none
+}
+
+headers {
+  Cookie: {{LawfirmMemberCookie}}
 }
