@@ -1,11 +1,18 @@
 openai
 ollama
 python-dotenv
+python-multipart
 flake8
-
-azure-identity
-azure-storage-blob
-azure-search-documents
+Pillow
+beautifulsoup4
+selenium
+webdriver-manager
+requests
+pypdf2 
+PyMuPDF
+pdfminer.six
+pdf2image
+pytesseract
 
 httpx
 tenacity
