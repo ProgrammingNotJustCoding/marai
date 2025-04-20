@@ -440,7 +440,7 @@ func (cc *ConsultationController) HandleUploadDocument(c echo.Context) error {
 
 	file, err := c.FormFile("file")
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, constants.Error{Status: 400, Message: "Bad Request", PrettyMessage: "Missing 'document' file in form data."})
+		return c.JSON(http.StatusBadRequest, constants.Error{Status: 400, Message: "Bad Request", PrettyMessage: "Missing 'file' in form data."})
 	}
 
 	src, err := file.Open()
