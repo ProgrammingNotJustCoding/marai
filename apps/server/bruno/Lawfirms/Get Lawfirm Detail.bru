@@ -1,7 +1,17 @@
 meta {
   name: Get Lawfirm Detail
   type: http
-  seq: 4
+  seq: 3
+}
+
+get {
+  url: {{BaseUrl}}/lawfirms/01JS9SBHVJ204TY0VF4RWY43J3
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
 }
 
 docs {
@@ -9,14 +19,4 @@ docs {
   description: """
   This endpoint retrieves the details of a specific law firm by its ID.
   """
-}
-
-get {
-  url: {{BaseUrl}}/lawfirms/01JQVMZCM67MRKZCVN1DVT0FR3
-  body: json
-  auth: none
-}
-
-headers {
-  Cookie: {{Cookie}}
 }

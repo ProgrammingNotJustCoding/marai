@@ -4,13 +4,6 @@ meta {
   seq: 4
 }
 
-docs {
-  title: "Find Users by Username"
-  description: """
-  This endpoint retrieves public user information based on the provided username.
-  """
-}
-
 get {
   url: {{BaseUrl}}/auth/user/public
   body: json
@@ -21,4 +14,11 @@ body:json {
   {
     "username": "harshpa"
   }
+}
+
+docs {
+  title: "Find Users by Username"
+  description: """
+  This endpoint retrieves public user information based on the provided username.
+  """
 }

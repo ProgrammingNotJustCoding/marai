@@ -37,8 +37,9 @@ func SetupRoutes(router *echo.Group,
 	authRouter.POST("/user/signin/email/verify", aC.HandleSigninEmailVerify)
 	authRouter.POST("/user/signin/password", aC.HandleSigninPassword)
 	authRouter.POST("/user/forgot-password", aC.HandleForgotPassword)
+	authRouter.GET("/user/public", aC.HandleGetPublicUsersByUsername)
 
-	authRouter.POST("/lawfirm/signup", aC.HandleLawFirmSignup)
+	authRouter.POST("/lawfirm/signup", aC.HandleLawFirmSignup) // TODO: Supposed to send email OTP and mobile OTP
 	authRouter.POST("/lawfirm/signup/email/verify", aC.HandleLawFirmSignupVerifyEmail)
 	authRouter.POST("/lawfirm/signup/mobile/verify", aC.HandleLawFirmSignupVerifyMobile)
 	authRouter.POST("/lawfirm/signin/mobile/otp", aC.HandleLawFirmSigninMobile)
@@ -47,7 +48,8 @@ func SetupRoutes(router *echo.Group,
 	authRouter.POST("/lawfirm/signin/email/verify", aC.HandleLawFirmSigninEmailVerify)
 	authRouter.POST("/lawfirm/signin/password", aC.HandleLawFirmSigninPassword)
 	authRouter.POST("/lawfirm/forgot-password", aC.HandleLawFirmForgotPassword)
-	authRouter.GET("/user/public", aC.HandleGetPublicUsersByUsername)
+
+	authRouter.GET("/lawfirm/member/signin/password", aC.HandleLawFirmMemberSigninPassword)
 
 	lawFirmRouter := router.Group("/lawfirms")
 	lawFirmRouter.Use(mW.AuthMiddleware())
@@ -64,8 +66,8 @@ func SetupRoutes(router *echo.Group,
 	lawFirmRouter.PUT("/:id/members/:memberId", lC.HandleUpdateMember, mW.RequireLawFirmAdmin())
 	lawFirmRouter.DELETE("/:id/members/:memberId", lC.HandleRemoveMember, mW.RequireLawFirmAdmin())
 
-	lawFirmRouter.GET("/:id/roles/new", lC.HandleListRoles, mW.RequirePermission("read"))
-	lawFirmRouter.POST("/:id/roles", lC.HandleCreateRole, mW.RequireLawFirmAdmin())
+	lawFirmRouter.GET("/:id/roles", lC.HandleListRoles, mW.RequirePermission("read"))
+	lawFirmRouter.POST("/:id/roles/new", lC.HandleCreateRole, mW.RequireLawFirmAdmin())
 	lawFirmRouter.PUT("/:id/roles/:roleId", lC.HandleUpdateRole, mW.RequireLawFirmAdmin())
 	lawFirmRouter.DELETE("/:id/roles/:roleId", lC.HandleDeleteRole, mW.RequireLawFirmAdmin())
 

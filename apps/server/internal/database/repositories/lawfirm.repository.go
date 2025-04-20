@@ -30,7 +30,8 @@ func (r *LawFirmRepo) CreateLawFirm(ctx context.Context, lawFirm *schema.LawFirm
 
 func (r *LawFirmRepo) GetLawFirmByID(ctx context.Context, id string) (*schema.LawFirm, error) {
 	var lawFirm schema.LawFirm
-	err := r.db.WithContext(ctx).Where("id = ? AND is_deleted = ?", id, false).First(&lawFirm).Error
+	err := r.db.WithContext(ctx).Preload("Members").Preload("Roles").Where("id = ? AND is_deleted = ?", id, false).First(&lawFirm).Error
+
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -42,7 +43,7 @@ func (r *LawFirmRepo) GetLawFirmByID(ctx context.Context, id string) (*schema.La
 
 func (r *LawFirmRepo) GetLawFirmByEmail(ctx context.Context, email string) (*schema.LawFirm, error) {
 	var lawFirm schema.LawFirm
-	err := r.db.WithContext(ctx).Where("email = ? AND is_deleted = ?", email, false).First(&lawFirm).Error
+	err := r.db.WithContext(ctx).Preload("Members").Preload("Roles").Where("email = ? AND is_deleted = ?", email, false).First(&lawFirm).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -54,7 +55,7 @@ func (r *LawFirmRepo) GetLawFirmByEmail(ctx context.Context, email string) (*sch
 
 func (r *LawFirmRepo) GetLawFirmByMobile(ctx context.Context, mobile string) (*schema.LawFirm, error) {
 	var lawFirm schema.LawFirm
-	err := r.db.WithContext(ctx).Where("mobile = ? AND is_deleted = ?", mobile, false).First(&lawFirm).Error
+	err := r.db.WithContext(ctx).Preload("Members").Preload("Roles").Where("mobile = ? AND is_deleted = ?", mobile, false).First(&lawFirm).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -206,10 +207,15 @@ func (r *LawFirmRepo) IsOwner(userID string, lawFirmID string) bool {
 func (r *LawFirmRepo) HasPermission(ctx context.Context, userID string, lawFirmID string, permission string) (bool, error) {
 	var lawyerRole schema.LawFirmRole
 	var member schema.LawFirmMember
-	err := r.db.WithContext(ctx).Where("user_id = ? AND law_firm_id = ? AND is_deleted = ?", userID, lawFirmID, false).First(&member).Error
+
+	err := r.db.WithContext(ctx).Where("id = ? AND law_firm_id = ? AND is_deleted = ?", userID, lawFirmID, false).First(&member).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
 		return false, err
 	}
+
 	err = r.db.WithContext(ctx).Where("id = ?", member.RoleID).First(&lawyerRole).Error
 	if err != nil {
 		return false, err
@@ -243,8 +249,12 @@ func (r *LawFirmRepo) HasAdminPermission(ctx context.Context, userID string, law
 
 func (r *LawFirmRepo) IsMember(ctx context.Context, email string, lawFirmID string) (bool, error) {
 	var member schema.LawFirmMember
-	err := r.db.WithContext(ctx).Where("email = ? AND law_firm_id = ? AND is_deleted = ?", email, lawFirmID, false).First(&member).Error
+	err := r.db.WithContext(ctx).Where("member_email = ? AND law_firm_id = ? AND is_deleted = ?", email, lawFirmID, false).First(&member).Error
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+
 		return false, err
 	}
 	return member.ID != "", nil
