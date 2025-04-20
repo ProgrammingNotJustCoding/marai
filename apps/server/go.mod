@@ -19,6 +19,7 @@ require (
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/minio/crc64nvme v1.0.1 // indirect
@@ -30,6 +31,7 @@ require (
 	github.com/golang/mock v1.6.0 // indirect
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
+	github.com/gosimple/slug v1.15.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.5.5 // indirect

@@ -1,0 +1,22 @@
+meta {
+  name: Set Fees
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/api/consultations/{{consultationId}}/set-fees
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "fees": {
+      "initialConsultation": 5000,
+      "documentReview": 2000,
+      "hourlyRate": 1500
+    }
+  }
+}
+

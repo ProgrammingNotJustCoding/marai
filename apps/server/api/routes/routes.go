@@ -14,6 +14,7 @@ func SetupRoutes(router *echo.Group,
 	lC *controllers.LawFirmController,
 	cC *controllers.ContractsController,
 	kC *controllers.KeysController,
+	conC *controllers.ConsultationController,
 	startTime time.Time,
 ) {
 	router.GET("/health", func(c echo.Context) error {
@@ -36,6 +37,7 @@ func SetupRoutes(router *echo.Group,
 	authRouter.POST("/user/signin/email/verify", aC.HandleSigninEmailVerify)
 	authRouter.POST("/user/signin/password", aC.HandleSigninPassword)
 	authRouter.POST("/user/forgot-password", aC.HandleForgotPassword)
+	authRouter.GET("/user/public", aC.HandleGetPublicUsersByUsername)
 
 	authRouter.POST("/lawfirm/signup", aC.HandleLawFirmSignup)
 	authRouter.POST("/lawfirm/signup/email/verify", aC.HandleLawFirmSignupVerifyEmail)
@@ -46,7 +48,8 @@ func SetupRoutes(router *echo.Group,
 	authRouter.POST("/lawfirm/signin/email/verify", aC.HandleLawFirmSigninEmailVerify)
 	authRouter.POST("/lawfirm/signin/password", aC.HandleLawFirmSigninPassword)
 	authRouter.POST("/lawfirm/forgot-password", aC.HandleLawFirmForgotPassword)
-	authRouter.GET("/user/public", aC.HandleGetPublicUsersByUsername)
+
+	authRouter.GET("/lawfirm/member/signin/password", aC.HandleLawFirmMemberSigninPassword)
 
 	lawFirmRouter := router.Group("/lawfirms")
 	lawFirmRouter.Use(mW.AuthMiddleware())
@@ -63,17 +66,13 @@ func SetupRoutes(router *echo.Group,
 	lawFirmRouter.PUT("/:id/members/:memberId", lC.HandleUpdateMember, mW.RequireLawFirmAdmin())
 	lawFirmRouter.DELETE("/:id/members/:memberId", lC.HandleRemoveMember, mW.RequireLawFirmAdmin())
 
-	lawFirmRouter.GET("/:id/roles/new", lC.HandleListRoles, mW.RequirePermission("read"))
-	lawFirmRouter.POST("/:id/roles", lC.HandleCreateRole, mW.RequireLawFirmAdmin())
+	lawFirmRouter.GET("/:id/roles", lC.HandleListRoles, mW.RequirePermission("read"))
+	lawFirmRouter.POST("/:id/roles/new", lC.HandleCreateRole, mW.RequireLawFirmAdmin())
 	lawFirmRouter.PUT("/:id/roles/:roleId", lC.HandleUpdateRole, mW.RequireLawFirmAdmin())
 	lawFirmRouter.DELETE("/:id/roles/:roleId", lC.HandleDeleteRole, mW.RequireLawFirmAdmin())
 
 	lawFirmRouter.POST("/:id/roles/promote", lC.HandlePromoteRoleToAdmin, mW.RequireLawFirmOwnership())
 	lawFirmRouter.POST("/:id/roles/demote", lC.HandleDemoteRoleFromAdmin, mW.RequireLawFirmOwnership())
-
-	// TODO: Make useful user routes later - like reset pwd, current cases, etc... etc...
-
-	// TODO: Make useful admin routes later
 
 	keysGroup := router.Group("/keys")
 	keysGroup.Use(mW.AuthMiddleware())
@@ -95,14 +94,29 @@ func SetupRoutes(router *echo.Group,
 
 	contractsRouter.POST("/:id/file", cC.HandleUploadContractFile)
 	contractsRouter.GET("/:id/file", cC.HandleGetContractFile)
-
 	contractsRouter.GET("/:id/file/versions", cC.HandleListContractFileVersions)
 	contractsRouter.GET("/:id/file/versions/:version", cC.HandleGetContractFileVersion)
-
 	contractsRouter.POST("/:id/parties", cC.HandleAddContractParty)
 	contractsRouter.DELETE("/:id/parties/:partyId", cC.HandleRemoveContractParty)
-
 	contractsRouter.POST("/:id/sign", cC.HandleSignContract)
+
+	consultationRouter := router.Group("/consultations")
+	consultationRouter.Use(mW.AuthMiddleware())
+
+	consultationRouter.POST("", conC.HandleCreateConsultation)
+	consultationRouter.GET("", conC.HandleListConsultations)
+	consultationRouter.GET("/:id", conC.HandleGetConsultation)
+	consultationRouter.POST("/:id/accept-firm", conC.HandleAcceptConsultation, mW.RequireLawFirmAdmin())
+	consultationRouter.POST("/:id/assign-lawyer", conC.HandleAssignLawyer, mW.RequireLawFirmAdmin())
+	consultationRouter.POST("/:id/accept-lawyer", conC.HandleAcceptByLawyer)
+	consultationRouter.POST("/:id/set-fees", conC.HandleSetFees)
+	consultationRouter.POST("/:id/confirm-fees", conC.HandleConfirmFees)
+	consultationRouter.POST("/:id/mark-taken", conC.HandleMarkAsTaken)
+	consultationRouter.POST("/:id/documents", conC.HandleUploadDocument)
+	consultationRouter.GET("/:id/documents", conC.HandleListDocuments)
+	consultationRouter.GET("/:id/documents/:docId", conC.HandleGetDocument)
+	consultationRouter.POST("/:id/chat", conC.HandleSendMessage)
+	consultationRouter.GET("/:id/chat", conC.HandleListMessages)
 
 	router.Any("/*", func(c echo.Context) error {
 		return c.JSON(404, map[string]any{

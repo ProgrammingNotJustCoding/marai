@@ -1,0 +1,18 @@
+meta {
+  name: Create Consultation
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/consultations
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "lawFirmId": "",
+    "caseDetails": "Need help with a property dispute regarding inheritance."
+  }
+}

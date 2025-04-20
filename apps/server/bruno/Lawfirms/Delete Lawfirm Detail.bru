@@ -1,7 +1,17 @@
 meta {
   name: Delete Lawfirm Detail
   type: http
-  seq: 6
+  seq: 5
+}
+
+delete {
+  url: {{BaseUrl}}/lawfirms/01JS9SBHVJ204TY0VF4RWY43J4
+  body: none
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
 }
 
 docs {
@@ -9,14 +19,4 @@ docs {
   description: """
   This endpoint deletes a law firm by specifying its ID.
   """
-}
-
-delete {
-  url: {{BaseUrl}}/lawfirms/01JM97DSBZRN1WXE4Y2S4MTT0M
-  body: none
-  auth: none
-}
-
-headers {
-  Cookie: {{Cookie}}
 }

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"log/slog"
 	"marai/api/constants"
 	"marai/internal/config"
 	"marai/internal/database/repositories"
@@ -71,6 +72,12 @@ type LawFirmSignupRequest struct {
 }
 
 type LawFirmSigninPasswordRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
+type LawFirmMemberSigninPasswordRequest struct {
+	Lawfirm  string `json:"lawfirm" validate:"required"`
 	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required"`
 }
@@ -562,6 +569,7 @@ func (a *AuthController) HandleGetPublicUsersByUsername(c echo.Context) error {
 }
 
 func (a *AuthController) HandleLawFirmSignup(c echo.Context) error {
+	slog.Info("HandleLawFirmSignup called")
 	req := new(LawFirmSignupRequest)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
@@ -603,10 +611,10 @@ func (a *AuthController) HandleLawFirmSignup(c echo.Context) error {
 		}
 	}
 
-	if err := a.sendEmailOtp(c, req.Email); err != nil {
-		c.Logger().Error("Failed to send OTP:", err)
-		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
-	}
+	// if err := a.sendEmailOtp(c, req.Email); err != nil {
+	// 	c.Logger().Error("Failed to send OTP:", err)
+	// 	return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	// }
 
 	if err := a.sendMobileOtp(c, req.Mobile); err != nil {
 		c.Logger().Error("Failed to send OTP:", err)
@@ -909,17 +917,53 @@ func (a *AuthController) HandleLawFirmSigninPassword(c echo.Context) error {
 	})
 }
 
+func (a *AuthController) HandleLawFirmMemberSigninPassword(c echo.Context) error {
+	req := new(LawFirmMemberSigninPasswordRequest)
+	if err := c.Bind(req); err != nil {
+		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
+	}
+	member, err := a.lawFirmRepo.GetMemberByEmail(c.Request().Context(), req.Email, req.Lawfirm)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(member.MemberHash), []byte(req.Password)); err != nil {
+		return c.JSON(http.StatusUnauthorized, constants.ErrUnauthorized)
+	}
+
+	session, err := a.sessionRepo.CreateSession(c.Request().Context(), member.ID, LawfirmSession)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
+	}
+
+	c.SetCookie(&http.Cookie{
+		Name:     "sessionID",
+		Value:    session.ID,
+		Expires:  session.ExpiresAt,
+		HttpOnly: true,
+		Path:     "/",
+	})
+
+	return c.JSON(http.StatusOK, AuthResponse{
+		SessionID: session.ID,
+		Data: map[string]string{
+			"name":  member.MemberName,
+			"email": member.MemberEmail,
+		},
+	})
+
+}
+
 func (a *AuthController) HandleLawFirmForgotPassword(c echo.Context) error {
 	req := new(ForgotPasswordRequest)
 	if err := c.Bind(req); err != nil {
 		return c.JSON(http.StatusBadRequest, constants.ErrBadRequest)
 	}
 
-	lawfirm, err := a.lawFirmRepo.GetLawFirmByEmail(c.Request().Context(), req.Email)
+	member, err := a.lawFirmRepo.GetLawFirmByEmail(c.Request().Context(), req.Email)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
-	if lawfirm == nil {
+	if member == nil {
 		return c.JSON(http.StatusNotFound, constants.ErrNotFound)
 	}
 
@@ -930,10 +974,10 @@ func (a *AuthController) HandleLawFirmForgotPassword(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	lawfirm.HashedPassword = string(hashedPassword)
-	lawfirm.UpdatedAt = time.Now()
+	member.HashedPassword = string(hashedPassword)
+	member.UpdatedAt = time.Now()
 
-	if err := a.lawFirmRepo.UpdateLawFirm(c.Request().Context(), lawfirm); err != nil {
+	if err := a.lawFirmRepo.UpdateLawFirm(c.Request().Context(), member); err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
@@ -941,7 +985,7 @@ func (a *AuthController) HandleLawFirmForgotPassword(c echo.Context) error {
 		"status":  http.StatusOK,
 		"message": "Password reset successfully.",
 		"data": map[string]interface{}{
-			"email":    lawfirm.Email,
+			"email":    member.Email,
 			"password": pwd,
 			"misc":     "No mail cause its expensive",
 		},

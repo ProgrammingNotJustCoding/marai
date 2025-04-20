@@ -82,7 +82,6 @@ func (r *SessionRepo) RevokeSession(ctx context.Context, token string) error {
 	return err
 }
 
-// TODO: for super admins / admin routes
 func (r *SessionRepo) ClearSessionCache() {
 	r.cacheMutex.Lock()
 	defer r.cacheMutex.Unlock()
