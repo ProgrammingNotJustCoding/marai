@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import CaseHeader from "@/components/dashboard/CaseHeader";
 import TabNavigation from "@/components/dashboard/TabNavigation";
@@ -23,6 +24,8 @@ const getCaseById = (id: string) => {
     description:
       "Filing for legal protection for a new AI-driven software innovation focusing on natural language processing.",
     assignedAttorney: "Sarah Wilson",
+    caseConfirmed: true,
+    consultationId: "consul-001",
     documents: [
       {
         id: "doc-1",
@@ -110,6 +113,7 @@ type CaseDetailsPageProps = {
 const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({ params }) => {
   const caseData = getCaseById(params.id);
   const [activeTab, setActiveTab] = useState("overview");
+  const router = useRouter();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -133,6 +137,36 @@ const CaseDetailsPage: React.FC<CaseDetailsPageProps> = ({ params }) => {
   const handleCompleteStep = (stepId: number) => {
     console.log("Completing step:", stepId);
   };
+
+  // Redirect to the consultation page if the case is not confirmed
+  if (!caseData.caseConfirmed) {
+    return (
+      <DashboardLayout>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-8 text-center"
+        >
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Case Not Yet Confirmed
+          </h2>
+          <p className="text-gray-600 dark:text-neutral-400 mb-6 max-w-md mx-auto">
+            This case is pending contract confirmation. Please complete your
+            consultation and sign the contract to access full case details.
+          </p>
+          <button
+            onClick={() =>
+              router.push(`/dashboard/consultations/${caseData.consultationId}`)
+            }
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white transition-colors"
+          >
+            Go to Consultation
+          </button>
+        </motion.div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>

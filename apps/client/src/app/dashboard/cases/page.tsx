@@ -1,37 +1,32 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import { motion } from "framer-motion";
-import {
-  FiBriefcase,
-  FiFileText,
-  FiClock,
-  FiChevronRight,
-  FiPlus,
-} from "react-icons/fi";
+import Link from "next/link";
 
-const mockCases = [
+const cases = [
   {
     id: "case-001",
-    title: "Patent Application for Software Innovation",
-    lawFirmId: "6",
+    title: "Software Innovation IP Protection",
     lawFirmName: "Wilson Intellectual Property",
-    status: "active",
+    startDate: "2023-10-15",
     lastUpdated: "2023-11-10T14:30:00",
-    documents: 3,
     type: "Intellectual Property",
+    status: "active",
+  },
+  {
+    id: "case-002",
+    title: "Trademark Registration - TechBrand",
+    lawFirmName: "Davis & Partners LLC",
+    startDate: "2023-12-05",
+    lastUpdated: "2023-12-07T09:15:00",
+    type: "Trademark",
+    status: "active",
   },
 ];
 
 export default function CasesPage() {
-  const router = useRouter();
-  const [cases] = useState(mockCases);
-
-  const activeCases = cases.filter((c) => c.status === "active");
-  const archivedCases = cases.filter((c) => c.status === "archived");
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
@@ -40,51 +35,15 @@ export default function CasesPage() {
     });
   };
 
-  const renderCaseCard = (caseItem: {
-    id: string;
-    title: string;
-    type: string;
-    status: string;
-    documents: number;
-    lawFirmName: string;
-    lastUpdated: string;
-  }) => (
-    <div
-      key={caseItem.id}
-      onClick={() => router.push(`/dashboard/cases/${caseItem.id}`)}
-      className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 rounded-lg p-4 cursor-pointer hover:border-green-500 dark:hover:border-green-500 transition-colors"
-    >
-      <div className="flex items-center justify-between mb-3">
-        <span className="px-3 py-1 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-full">
-          {caseItem.type}
-        </span>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          Last updated: {formatDate(caseItem.lastUpdated)}
-        </span>
-      </div>
-
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        {caseItem.title}
-      </h3>
-
-      <p className="text-gray-600 dark:text-gray-400 mb-4">
-        Handled by: {caseItem.lawFirmName}
-      </p>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4 text-sm">
-          <div className="flex items-center text-gray-500 dark:text-gray-400">
-            <FiFileText className="mr-1" />
-            <span>{caseItem.documents} documents</span>
-          </div>
-        </div>
-
-        <div className="text-green-600 dark:text-green-400">
-          <FiChevronRight />
-        </div>
-      </div>
-    </div>
-  );
+  const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <DashboardLayout>
@@ -93,58 +52,69 @@ export default function CasesPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              My Cases
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Manage and track your ongoing legal cases
-            </p>
-          </div>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">
+          My Cases
+        </h1>
 
-        {activeCases.length > 0 ? (
-          <div>
-            <h2 className="flex items-center text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              <FiBriefcase className="mr-2" />
-              Active Cases
-            </h2>
+        {cases.length > 0 ? (
+          <div className="grid gap-6">
+            {cases.map((caseItem) => (
+              <Link
+                href={`/dashboard/cases/${caseItem.id}`}
+                key={caseItem.id}
+                className="block"
+              >
+                <div className="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800 p-6 transition-all hover:shadow-md">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between">
+                    <div>
+                      <div className="flex items-center mb-2">
+                        <h3 className="text-xl font-medium text-gray-900 dark:text-white">
+                          {caseItem.title}
+                        </h3>
+                      </div>
+                      <p className="text-gray-600 dark:text-neutral-400 mb-1">
+                        <span className="font-medium">Law Firm:</span>{" "}
+                        {caseItem.lawFirmName}
+                      </p>
+                      <p className="text-gray-600 dark:text-neutral-400 mb-1">
+                        <span className="font-medium">Type:</span>{" "}
+                        {caseItem.type}
+                      </p>
+                      <p className="text-gray-600 dark:text-neutral-400">
+                        <span className="font-medium">Started:</span>{" "}
+                        {formatDate(caseItem.startDate)}
+                      </p>
+                    </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              {activeCases.map((caseItem) => renderCaseCard(caseItem))}
-            </div>
-
-            {archivedCases.length > 0 && (
-              <>
-                <h2 className="flex items-center text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                  <FiClock className="mr-2" />
-                  Archived Cases
-                </h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {archivedCases.map((caseItem) => renderCaseCard(caseItem))}
+                    <div className="mt-4 md:mt-0 flex flex-col items-end">
+                      <span
+                        className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          caseItem.status === "active"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+                        }`}
+                      >
+                        {caseItem.status === "active" ? "Active" : "Closed"}
+                      </span>
+                      <span className="text-gray-500 dark:text-gray-400 text-sm mt-2">
+                        Last updated: {formatDateTime(caseItem.lastUpdated)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </>
-            )}
+              </Link>
+            ))}
           </div>
         ) : (
-          <div className="bg-white dark:bg-neutral-900 border border-gray-200 dark:border-neutral-800 p-8 rounded-lg text-center">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-neutral-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FiBriefcase className="text-gray-500 dark:text-gray-400 text-2xl" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              No active cases
-            </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              You don&apos;t have any active cases with law firms yet.
+          <div className="bg-white dark:bg-neutral-900 p-8 rounded-lg text-center shadow-md">
+            <p className="text-gray-600 dark:text-neutral-400 text-lg">
+              You don't have any active cases yet.
             </p>
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="px-6 py-2 bg-green-600 hover:bg-green-700 rounded text-white transition-colors"
-            >
-              Find a Law Firm
-            </button>
+            <Link href="/dashboard/consultations">
+              <button className="mt-4 px-6 py-2 bg-green-600 hover:bg-green-700 rounded text-white transition-colors">
+                Schedule a Consultation
+              </button>
+            </Link>
           </div>
         )}
       </motion.div>
