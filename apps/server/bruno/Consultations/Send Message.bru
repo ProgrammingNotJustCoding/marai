@@ -1,0 +1,18 @@
+meta {
+  name: Send Message
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/api/consultations/{{consultationId}}/chat
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "message": "Hello, I have reviewed the initial details. Could you please provide the specific property address?"
+  }
+}
+

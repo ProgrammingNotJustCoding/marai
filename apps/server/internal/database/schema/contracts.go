@@ -5,23 +5,24 @@ import (
 )
 
 type Contract struct {
-	ID            string     `json:"id" gorm:"primaryKey;type:varchar(36)"`
-	Title         string     `json:"title" gorm:"not null"`
-	Description   string     `json:"description"`
-	Content       string     `json:"content,omitempty"`
-	FileURL       string     `json:"fileUrl,omitempty"`
-	FilePath      string     `json:"filePath,omitempty"`
-	FileHash      string     `json:"fileHash,omitempty"`
-	SignatureHash string     `json:"signatureHash,omitempty"`
-	Status        string     `json:"status" gorm:"not null;default:'draft'"`
-	LawFirmID     string     `json:"lawFirmId" gorm:"index;not null"`
-	CreatorID     string     `json:"creatorId" gorm:"index;not null"`
-	IsTemplate    bool       `json:"isTemplate" gorm:"default:false"`
-	ExpiresAt     *time.Time `json:"expiresAt,omitempty"`
-	IsDeleted     bool       `json:"isDeleted" gorm:"default:false"`
-	CreatedAt     time.Time  `json:"createdAt"`
-	UpdatedAt     time.Time  `json:"updatedAt"`
-	DeletedAt     *time.Time `json:"deletedAt,omitempty"`
+	ID             string     `json:"id" gorm:"primaryKey;type:varchar(36)"`
+	Title          string     `json:"title" gorm:"not null"`
+	Description    string     `json:"description"`
+	Content        string     `json:"content,omitempty" gorm:"type:text"` // Changed to TEXT for potentially large content + hashes
+	FileURL        string     `json:"fileUrl,omitempty"`
+	FilePath       string     `json:"filePath,omitempty"`
+	FileHash       string     `json:"fileHash,omitempty"`
+	SignatureHash  string     `json:"signatureHash,omitempty"`
+	Status         string     `json:"status" gorm:"not null;default:'draft'"`
+	LawFirmID      string     `json:"lawFirmId" gorm:"index;not null"`
+	CreatorID      string     `json:"creatorId" gorm:"index;not null"`
+	IsTemplate     bool       `json:"isTemplate" gorm:"default:false"`
+	ExpiresAt      *time.Time `json:"expiresAt,omitempty"`
+	IsDeleted      bool       `json:"isDeleted" gorm:"default:false"`
+	DocumentHashes string     `json:"documentHashes,omitempty" gorm:"type:text"` // Comma-separated slugified documentname_hash
+	CreatedAt      time.Time  `json:"createdAt"`
+	UpdatedAt      time.Time  `json:"updatedAt"`
+	DeletedAt      *time.Time `json:"deletedAt,omitempty"`
 
 	LawFirm         LawFirm          `json:"-" gorm:"foreignKey:LawFirmID"`
 	Creator         User             `json:"-" gorm:"foreignKey:CreatorID"`

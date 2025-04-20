@@ -1,0 +1,11 @@
+meta {
+  name: Upload Document
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{baseUrl}}/api/consultations/{{consultationId}}/documents
+  body: multipartForm
+  auth: none
+}

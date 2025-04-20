@@ -14,6 +14,7 @@ func SetupRoutes(router *echo.Group,
 	lC *controllers.LawFirmController,
 	cC *controllers.ContractsController,
 	kC *controllers.KeysController,
+	conC *controllers.ConsultationController, // Added ConsultationController
 	startTime time.Time,
 ) {
 	router.GET("/health", func(c echo.Context) error {
@@ -95,14 +96,29 @@ func SetupRoutes(router *echo.Group,
 
 	contractsRouter.POST("/:id/file", cC.HandleUploadContractFile)
 	contractsRouter.GET("/:id/file", cC.HandleGetContractFile)
-
 	contractsRouter.GET("/:id/file/versions", cC.HandleListContractFileVersions)
 	contractsRouter.GET("/:id/file/versions/:version", cC.HandleGetContractFileVersion)
-
 	contractsRouter.POST("/:id/parties", cC.HandleAddContractParty)
 	contractsRouter.DELETE("/:id/parties/:partyId", cC.HandleRemoveContractParty)
-
 	contractsRouter.POST("/:id/sign", cC.HandleSignContract)
+
+	consultationRouter := router.Group("/consultations")
+	consultationRouter.Use(mW.AuthMiddleware()) // All consultation routes require authentication
+
+	consultationRouter.POST("", conC.HandleCreateConsultation)
+	consultationRouter.GET("", conC.HandleListConsultations)
+	consultationRouter.GET("/:id", conC.HandleGetConsultation)
+	consultationRouter.POST("/:id/accept-firm", conC.HandleAcceptConsultation, mW.RequireLawFirmAdmin()) // Requires firm admin/owner
+	consultationRouter.POST("/:id/assign-lawyer", conC.HandleAssignLawyer, mW.RequireLawFirmAdmin())     // Requires firm admin/owner
+	consultationRouter.POST("/:id/accept-lawyer", conC.HandleAcceptByLawyer)                             // Requires assigned lawyer
+	consultationRouter.POST("/:id/set-fees", conC.HandleSetFees)                                         // Requires assigned lawyer
+	consultationRouter.POST("/:id/confirm-fees", conC.HandleConfirmFees)                                 // Requires the user who created it
+	consultationRouter.POST("/:id/mark-taken", conC.HandleMarkAsTaken)                                   // Requires assigned lawyer
+	consultationRouter.POST("/:id/documents", conC.HandleUploadDocument)
+	consultationRouter.GET("/:id/documents", conC.HandleListDocuments)
+	consultationRouter.GET("/:id/documents/:docId", conC.HandleGetDocument)
+	consultationRouter.POST("/:id/chat", conC.HandleSendMessage)
+	consultationRouter.GET("/:id/chat", conC.HandleListMessages)
 
 	router.Any("/*", func(c echo.Context) error {
 		return c.JSON(404, map[string]any{

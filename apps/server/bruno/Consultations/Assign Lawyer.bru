@@ -1,0 +1,17 @@
+meta {
+  name: Assign Lawyer
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/consultations/{{consultationId}}/assign-lawyer
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "lawyerId": "{{lawyerId_ToAssign}}"
+  }
+}

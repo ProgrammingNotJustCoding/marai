@@ -1,0 +1,21 @@
+meta {
+  name: List Consultations
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/consultations?page=1&pageSize=10&status=new&lawFirmId={{lawFirmId_Managed}}
+  body: none
+  auth: none
+}
+
+query {
+  page: 1
+  pageSize: 10
+  status: new
+  lawFirmId: {{lawFirmId_Managed}}
+  ~assignedLawyerId: {{lawyerId}}
+  ~isTaken: false
+  ~userId: {{userId_Self}}
+}

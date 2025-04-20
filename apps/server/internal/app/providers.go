@@ -15,18 +15,19 @@ import (
 )
 
 type App struct {
-	Echo               *echo.Echo
-	DB                 *gorm.DB
-	minioDB            *minio.Client
-	Middlewares        *middlewares.Middlewares
-	UserRepo           *repositories.UserRepo
-	SessionRepo        *repositories.SessionRepo
-	AuthController     *controllers.AuthController
-	LawfirmController  *controllers.LawFirmController
-	ContractController *controllers.ContractsController
-	KeysController     *controllers.KeysController
-	RoleCache          *middlewares.RoleCache
-	StartTime          time.Time
+	Echo                   *echo.Echo
+	DB                     *gorm.DB
+	minioDB                *minio.Client
+	Middlewares            *middlewares.Middlewares
+	UserRepo               *repositories.UserRepo
+	SessionRepo            *repositories.SessionRepo
+	AuthController         *controllers.AuthController
+	LawfirmController      *controllers.LawFirmController
+	ContractController     *controllers.ContractsController
+	KeysController         *controllers.KeysController
+	ConsultationController *controllers.ConsultationController // Added ConsultationController
+	RoleCache              *middlewares.RoleCache
+	StartTime              time.Time
 }
 
 func NewApp(
@@ -40,22 +41,24 @@ func NewApp(
 	ContractController *controllers.ContractsController,
 	KeysController *controllers.KeysController,
 	RoleCache *middlewares.RoleCache,
+	ConsultationController *controllers.ConsultationController, // Added ConsultationController
 ) *App {
 	e := echo.New()
 
 	return &App{
-		Echo:               e,
-		DB:                 db,
-		minioDB:            minioDB,
-		Middlewares:        mw,
-		UserRepo:           UserRepo,
-		SessionRepo:        SessionRepo,
-		AuthController:     AuthController,
-		LawfirmController:  LawfirmController,
-		ContractController: ContractController,
-		KeysController:     KeysController,
-		RoleCache:          RoleCache,
-		StartTime:          time.Now(),
+		Echo:                   e,
+		DB:                     db,
+		minioDB:                minioDB,
+		Middlewares:            mw,
+		UserRepo:               UserRepo,
+		SessionRepo:            SessionRepo,
+		AuthController:         AuthController,
+		LawfirmController:      LawfirmController,
+		ContractController:     ContractController,
+		KeysController:         KeysController,
+		RoleCache:              RoleCache,
+		ConsultationController: ConsultationController, // Added ConsultationController
+		StartTime:              time.Now(),
 	}
 }
 
@@ -71,10 +74,12 @@ func NewFxApp() *fx.App {
 				repositories.NewUserRepository,
 				repositories.NewLawFirmRepo,
 				repositories.NewContractsRepository,
+				repositories.NewConsultationRepository, // Added ConsultationRepository provider
 				controllers.NewAuthController,
 				controllers.NewLawFirmController,
 				controllers.NewContractsController,
 				controllers.NewKeysController,
+				controllers.NewConsultationController, // Added ConsultationController provider
 				middlewares.NewRoleCache,
 				middlewares.NewMiddlewares,
 				NewApp,
