@@ -1,19 +1,19 @@
 meta {
-  name: signup req verify
+  name: signup req email verify
   type: http
   seq: 3
 }
 
 post {
-  url: {{BaseUrl}}/auth/user/signup/verify
+  url: {{BaseUrl}}/auth/user/signup/email/verify
   body: json
   auth: none
 }
 
 body:json {
   {
-    "mobile": "+919840121224",
-    "otp": "386992"
+    "email": "hp8823@srmist.edu.in",
+    "otp": "654757"
   }
 }
 

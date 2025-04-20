@@ -1,0 +1,16 @@
+meta {
+  name: List Messages
+  type: http
+  seq: 14
+}
+
+get {
+  url: {{baseUrl}}/api/consultations/{{consultationId}}/chat?limit=50
+  body: none
+  auth: none
+}
+
+query {
+  limit: 50
+  ~after: 2025-04-20T10:00:00Z
+}

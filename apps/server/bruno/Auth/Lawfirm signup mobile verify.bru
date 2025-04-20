@@ -1,0 +1,29 @@
+meta {
+  name: Lawfirm signup mobile verify
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{BaseUrl}}/auth/lawfirm/signup/mobile/verify
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "mobile": "+919840121224",
+    "otp": "733406"
+  }
+}
+
+docs {
+  title: "Create Law Firm"
+  description: """
+  This endpoint allows the creation of a new law firm by providing details such as name, address, phone, and email.
+  """
+}

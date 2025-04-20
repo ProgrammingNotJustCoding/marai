@@ -404,7 +404,7 @@ func (r *ContractsRepo) ListContractFileVersions(ctx context.Context, contractID
 			FileHash:    objInfo.ETag,
 			UploadedAt:  objInfo.LastModified,
 			FileSize:    objInfo.Size,
-			FileGenType: objVerType, // TODO: if its a signing version, or a user upload version
+			FileGenType: objVerType,
 		}
 
 		versions = append(versions, version)

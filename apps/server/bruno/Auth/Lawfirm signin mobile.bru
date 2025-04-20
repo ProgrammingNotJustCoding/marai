@@ -1,0 +1,28 @@
+meta {
+  name: Lawfirm signin mobile
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{BaseUrl}}/auth/lawfirm/signin/mobile/verify
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "mobile": "+919840121224"
+  }
+}
+
+docs {
+  title: "Create Law Firm"
+  description: """
+  This endpoint allows the creation of a new law firm by providing details such as name, address, phone, and email.
+  """
+}

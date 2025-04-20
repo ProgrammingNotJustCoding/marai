@@ -1,0 +1,25 @@
+meta {
+  name: signup req mobile verify
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{BaseUrl}}/auth/user/signup/mobile/verify
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "mobile": "+919840121224",
+    "otp": "654757"
+  }
+}
+
+docs {
+  title: "Signup Verification"
+  description: """
+  This endpoint verifies a user's signup by validating the OTP sent to their mobile number.
+  """
+}

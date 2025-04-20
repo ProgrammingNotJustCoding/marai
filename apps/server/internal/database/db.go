@@ -69,7 +69,7 @@ func NewMinioDB() *minio.Client {
 			config.GetEnv("MINIO_ACCESS_SECRET"),
 			""),
 		Secure: SSLPolicy,
-		Region: "",
+		Region: "ap-south-1",
 	})
 	if err != nil {
 		slog.Error("Error creating MinIO client", slog.String("error", err.Error()))

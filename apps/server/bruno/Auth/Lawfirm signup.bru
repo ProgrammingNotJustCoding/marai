@@ -1,0 +1,32 @@
+meta {
+  name: Lawfirm signup
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{BaseUrl}}/auth/lawfirm/signup
+  body: json
+  auth: none
+}
+
+headers {
+  Cookie: {{Cookie}}
+}
+
+body:json {
+  {
+    "name":"test-1",
+    "address":"chennai, India",
+    "mobile": "+919840121224",
+    "email": "hp8823@srmist.edu.in",
+    "password": "noob"
+  }
+}
+
+docs {
+  title: "Create Law Firm"
+  description: """
+  This endpoint allows the creation of a new law firm by providing details such as name, address, phone, and email.
+  """
+}
