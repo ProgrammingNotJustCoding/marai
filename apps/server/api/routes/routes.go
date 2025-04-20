@@ -49,7 +49,7 @@ func SetupRoutes(router *echo.Group,
 	authRouter.POST("/lawfirm/signin/password", aC.HandleLawFirmSigninPassword)
 	authRouter.POST("/lawfirm/forgot-password", aC.HandleLawFirmForgotPassword)
 
-	authRouter.GET("/lawfirm/member/signin/password", aC.HandleLawFirmMemberSigninPassword)
+	authRouter.POST("/lawfirm/member/signin/password", aC.HandleLawFirmMemberSigninPassword)
 
 	lawFirmRouter := router.Group("/lawfirms")
 	lawFirmRouter.Use(mW.AuthMiddleware())
@@ -106,8 +106,8 @@ func SetupRoutes(router *echo.Group,
 	consultationRouter.POST("", conC.HandleCreateConsultation)
 	consultationRouter.GET("", conC.HandleListConsultations)
 	consultationRouter.GET("/:id", conC.HandleGetConsultation)
-	consultationRouter.POST("/:id/accept-firm", conC.HandleAcceptConsultation, mW.RequireLawFirmAdmin())
-	consultationRouter.POST("/:id/assign-lawyer", conC.HandleAssignLawyer, mW.RequireLawFirmAdmin())
+	consultationRouter.POST("/:id/accept-firm", conC.HandleAcceptConsultation)
+	consultationRouter.POST("/:id/assign-lawyer", conC.HandleAssignLawyer)
 	consultationRouter.POST("/:id/accept-lawyer", conC.HandleAcceptByLawyer)
 	consultationRouter.POST("/:id/set-fees", conC.HandleSetFees)
 	consultationRouter.POST("/:id/confirm-fees", conC.HandleConfirmFees)

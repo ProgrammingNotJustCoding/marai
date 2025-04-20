@@ -5,17 +5,21 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/consultations?page=1&pageSize=10&status=new&lawFirmId={{lawFirmId_Managed}}
+  url: {{BaseUrl}}/consultations?page=1&pageSize=10&status=new&lawFirmId=01JS9SBHVJ204TY0VF4RWY43J3
   body: none
   auth: none
 }
 
-query {
+params:query {
   page: 1
   pageSize: 10
   status: new
-  lawFirmId: {{lawFirmId_Managed}}
+  lawFirmId: 01JS9SBHVJ204TY0VF4RWY43J3
   ~assignedLawyerId: {{lawyerId}}
   ~isTaken: false
   ~userId: {{userId_Self}}
+}
+
+headers {
+  Cookie: {{LawfirmMemberCookie}}
 }
