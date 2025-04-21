@@ -13,14 +13,14 @@ module "security_group" {
   
   ingress_rules = [
     {
-      from_port   = 5432  # PostgreSQL
+      from_port   = 5432
       to_port     = 5432
       protocol    = "tcp"
       cidr_blocks = var.allowed_cidr_blocks
       description = "Allow PostgreSQL access"
     },
     {
-      from_port   = 6379  # Redis
+      from_port   = 6379
       to_port     = 6379
       protocol    = "tcp"
       cidr_blocks = var.allowed_cidr_blocks
@@ -35,10 +35,10 @@ module "cloudwatch" {
   retention_in_days = var.retention_in_days
 }
 
-module "waf" {
-  source   = "./modules/waf"
-  waf_name = var.waf_name
-}
+# module "waf" {
+#   source   = "./modules/waf"
+#   waf_name = var.waf_name
+# }
 
 module "elb" {
   source     = "./modules/elb"

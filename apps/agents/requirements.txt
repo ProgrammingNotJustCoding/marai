@@ -1,7 +1,29 @@
 openai
 ollama
 python-dotenv
-boto3
+python-multipart
 flake8
+Pillow
+beautifulsoup4
+selenium
+webdriver-manager
+requests
+PyPDF3
+pypdf2
+PyMuPDF
+pdfminer.six
+pdf2image
+pytesseract
+
+httpx
+tenacity
+structlog
+
+azure-storage-blob
+
+pyspark
+
+fastapi
+uvicorn
 
 # git+https://github.com/openai/swarm.git

@@ -46,9 +46,13 @@ terraform.tfvars
 setup_aws_env.sh
 
 # python
-venv/
+.venv/
 __pycache__/
 
 # swarm
 swarm.egg-info
 marai_agents.egg-info
+
+# nextjs
+.next/
+out/
