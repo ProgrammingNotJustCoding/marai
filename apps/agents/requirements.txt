@@ -8,7 +8,8 @@ beautifulsoup4
 selenium
 webdriver-manager
 requests
-pypdf2 
+PyPDF3
+pypdf2
 PyMuPDF
 pdfminer.six
 pdf2image
@@ -17,6 +18,8 @@ pytesseract
 httpx
 tenacity
 structlog
+
+azure-storage-blob
 
 pyspark
 
