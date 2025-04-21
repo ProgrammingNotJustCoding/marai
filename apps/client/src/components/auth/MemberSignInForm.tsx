@@ -2,28 +2,21 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { FiArrowRight, FiPhone, FiLock, FiUser, FiMail } from "react-icons/fi";
+import { FiArrowRight, FiUser, FiLock, FiBriefcase } from "react-icons/fi";
+import Link from "next/link";
 
-interface SignUpFormProps {
-  onSwitchToSignIn: () => void;
-  onSubmit: (data: {
-    username: string;
-    email: string;
-    mobile: string;
-    password: string;
-  }) => void;
+interface MemberSignInFormProps {
+  onSubmit: (data: { credentials: string; password: string }) => void;
   isLoading: boolean;
 }
 
-const SignUpForm: React.FC<SignUpFormProps> = ({
-  onSwitchToSignIn,
+const MemberSignInForm: React.FC<MemberSignInFormProps> = ({
   onSubmit,
   isLoading,
 }) => {
   const [formData, setFormData] = useState({
     username: "",
-    email: "",
-    mobile: "",
+    lawFirm: "",
     password: "",
   });
 
@@ -32,21 +25,19 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const formatMobileNumber = (number: string) => {
-    // Ensure mobile number has country code
-    if (!number.startsWith("+")) {
-      return `+${number}`;
-    }
-    return number;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formattedData = {
-      ...formData,
-      mobile: formatMobileNumber(formData.mobile),
-    };
-    onSubmit(formattedData);
+
+    const credentials = `${formData.username}@${formData.lawFirm}`;
+    console.log("Form submitted with:", {
+      credentials,
+      password: formData.password,
+    });
+
+    onSubmit({
+      credentials,
+      password: formData.password,
+    });
   };
 
   return (
@@ -57,10 +48,10 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
       transition={{ duration: 0.3 }}
     >
       <h2 className="text-2xl font-bold text-neutral-800 dark:text-white mb-6">
-        Create your account
+        Law Firm Member Sign In
       </h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
           <label
             htmlFor="username"
@@ -79,61 +70,34 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
               required
               value={formData.username}
               onChange={handleChange}
-              placeholder="Choose a username"
-              className="block w-full pl-10 pr-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:border-green-600 dark:focus:border-green-400 focus:outline-none"
+              placeholder="Your username in the law firm"
+              className="focus:border-green-600 dark:focus:border-green-400 block w-full pl-10 pr-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none"
             />
           </div>
         </div>
 
         <div className="space-y-2">
           <label
-            htmlFor="email"
+            htmlFor="lawFirm"
             className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
           >
-            Email
+            Law Firm Name
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiMail className="text-neutral-500" />
+              <FiBriefcase className="text-neutral-500" />
             </div>
             <input
-              id="email"
-              name="email"
-              type="email"
+              id="lawFirm"
+              name="lawFirm"
+              type="text"
               required
-              value={formData.email}
+              value={formData.lawFirm}
               onChange={handleChange}
-              placeholder="Enter your email"
-              className="block w-full pl-10 pr-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:border-green-600 dark:focus:border-green-400 focus:outline-none"
+              placeholder="Your law firm name"
+              className="focus:border-green-600 dark:focus:border-green-400 block w-full pl-10 pr-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:outline-none"
             />
           </div>
-        </div>
-
-        <div className="space-y-2">
-          <label
-            htmlFor="mobile"
-            className="block text-sm font-medium text-neutral-700 dark:text-neutral-300"
-          >
-            Mobile Number (with country code)
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FiPhone className="text-neutral-500" />
-            </div>
-            <input
-              id="mobile"
-              name="mobile"
-              type="tel"
-              required
-              value={formData.mobile}
-              onChange={handleChange}
-              placeholder="+919840121224"
-              className="block w-full pl-10 pr-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:border-green-600 dark:focus:border-green-400 focus:outline-none"
-            />
-          </div>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            Include country code (e.g. +91 for India)
-          </p>
         </div>
 
         <div className="space-y-2">
@@ -154,10 +118,19 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
               required
               value={formData.password}
               onChange={handleChange}
-              placeholder="Create a password"
+              placeholder="Enter your password"
               className="block w-full pl-10 pr-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:border-green-600 dark:focus:border-green-400 focus:outline-none"
             />
           </div>
+        </div>
+
+        <div className="flex justify-end">
+          <Link
+            href="#"
+            className="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+          >
+            Forgot your password?
+          </Link>
         </div>
 
         <button
@@ -166,29 +139,25 @@ const SignUpForm: React.FC<SignUpFormProps> = ({
           className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {isLoading ? (
-            "Signing Up..."
+            "Signing in..."
           ) : (
             <>
-              Sign Up <FiArrowRight className="ml-2" />
+              Sign In <FiArrowRight className="ml-2" />
             </>
           )}
         </button>
 
         <div className="text-center mt-4">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-            Already have an account?{" "}
-            <button
-              type="button"
-              onClick={onSwitchToSignIn}
-              className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 font-medium"
-            >
-              Sign in
-            </button>
-          </p>
+          <Link
+            href="/auth"
+            className="text-sm text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300"
+          >
+            Sign in as a user instead
+          </Link>
         </div>
       </form>
     </motion.div>
   );
 };
 
-export default SignUpForm;
+export default MemberSignInForm;

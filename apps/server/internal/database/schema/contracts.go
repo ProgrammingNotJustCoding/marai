@@ -24,8 +24,8 @@ type Contract struct {
 	UpdatedAt      time.Time  `json:"updatedAt"`
 	DeletedAt      *time.Time `json:"deletedAt,omitempty"`
 
-	LawFirm         LawFirm          `json:"-" gorm:"foreignKey:LawFirmID"`
-	Creator         User             `json:"-" gorm:"foreignKey:CreatorID"`
+	// LawFirm         LawFirm          `json:"-" gorm:"foreignKey:LawFirmID"`
+	// Creator         User             `json:"-" gorm:"foreignKey:CreatorID"`
 	Parties         []ContractParty  `json:"parties,omitempty" gorm:"foreignKey:ContractID"`
 	SignatureEvents []SignatureEvent `json:"signatureEvents,omitempty" gorm:"foreignKey:ContractID"`
 }

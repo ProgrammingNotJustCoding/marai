@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   FiUser,
   FiSearch,
@@ -15,6 +15,11 @@ import {
   FiPlusCircle,
   FiLayers,
   FiHome,
+  FiUserCheck,
+  FiUserPlus,
+  FiShield,
+  FiFile,
+  FiMessageCircle,
 } from "react-icons/fi";
 import UserDetailsModal from "@/components/dashboard/UserDetailsModal";
 import Theme from "@/components/common/Theme";
@@ -34,38 +39,43 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const verifyUser = async () => {
+    const initializeUser = () => {
       try {
-        // const token = localStorage.getItem("__token");
-        // const response = await fetch(`${API_URL}/auth/verify`, {
-        //   headers: {
-        //     Authorization: `Bearer ${token}`
-        //   }
-        // });
-        // const data = await response.json();
+        const storedUser = localStorage.getItem("__user");
 
-        setTimeout(() => {
-          const role = localStorage.getItem("__userRole") || "client";
-
-          const mockUser = {
-            name: "John Doe",
-            email: "john@example.com",
-            role: role as User["role"],
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+        } else {
+          const defaultUser = {
+            name: "Demo User",
+            email: "demo@example.com",
+            role: "lawfirm",
           };
 
-          setUser(mockUser);
-          localStorage.setItem("__user", JSON.stringify(mockUser));
-          setLoading(false);
-        }, 500);
+          localStorage.setItem("__user", JSON.stringify(defaultUser));
+          setUser(defaultUser as User);
+        }
+
+        if (!localStorage.getItem("lawfirmId")) {
+          router.push("/auth");
+        }
       } catch (error) {
-        console.error("Authentication error:", error);
+        console.error("Error initializing user:", error);
+        setUser({
+          name: "Demo User",
+          email: "demo@example.com",
+          role: "lawfirm",
+        });
+      } finally {
         setLoading(false);
       }
     };
 
-    verifyUser();
+    initializeUser();
   }, []);
 
   const getNavItems = (role: string) => {
@@ -98,6 +108,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             label: "Settings",
             href: "/dashboard/admin/settings",
           },
+          {
+            icon: <FiMessageCircle />,
+            label: "AI Chat",
+            href: "/dashboard/ai-chat",
+          },
         ];
 
       case "lawfirm":
@@ -105,32 +120,52 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           {
             icon: <FiHome />,
             label: "Dashboard",
-            href: "/dashboard/lawfirm",
+            href: "/dashboard/lawfirms",
+          },
+          {
+            icon: <FiShield />,
+            label: "Roles",
+            href: "/dashboard/lawfirms/roles",
+          },
+          {
+            icon: <FiPlusCircle />,
+            label: "Add Role",
+            href: "/dashboard/lawfirms/add-role",
           },
           {
             icon: <FiUsers />,
+            label: "Members",
+            href: "/dashboard/lawfirms/members",
+          },
+          {
+            icon: <FiUserPlus />,
+            label: "Add Member",
+            href: "/dashboard/lawfirms/add-member",
+          },
+          {
+            icon: <FiUserCheck />,
             label: "Our Lawyers",
-            href: "/dashboard/lawfirm/lawyers",
+            href: "/dashboard/lawfirms/lawyers",
           },
           {
             icon: <FiUsers />,
             label: "Our Clients",
-            href: "/dashboard/lawfirm/clients",
-          },
-          {
-            icon: <FiPlusCircle />,
-            label: "Add Lawyer",
-            href: "/dashboard/lawfirm/add-lawyer",
+            href: "/dashboard/lawfirms/clients",
           },
           {
             icon: <FiCalendar />,
             label: "Consultations",
-            href: "/dashboard/lawfirm/consultations",
+            href: "/dashboard/lawfirms/consultations",
           },
           {
             icon: <FiSettings />,
             label: "Settings",
-            href: "/dashboard/lawfirm/settings",
+            href: "/dashboard/lawfirms/settings",
+          },
+          {
+            icon: <FiMessageCircle />,
+            label: "AI Chat",
+            href: "/dashboard/ai-chat",
           },
         ];
 
@@ -139,27 +174,37 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
           {
             icon: <FiHome />,
             label: "Dashboard",
-            href: "/dashboard/lawyer",
-          },
-          {
-            icon: <FiUsers />,
-            label: "My Clients",
-            href: "/dashboard/lawyer/clients",
+            href: "/dashboard/lawyers",
           },
           {
             icon: <FiCalendar />,
             label: "Consultations",
-            href: "/dashboard/lawyer/consultations",
+            href: "/dashboard/lawyers/consultations",
           },
           {
             icon: <FiBriefcase />,
             label: "Cases",
-            href: "/dashboard/lawyer/cases",
+            href: "/dashboard/lawyers/cases",
+          },
+          {
+            icon: <FiFile />,
+            label: "Contracts",
+            href: "/dashboard/lawyers/contracts",
+          },
+          {
+            icon: <FiUsers />,
+            label: "My Clients",
+            href: "/dashboard/lawyers/clients",
           },
           {
             icon: <FiSettings />,
             label: "Settings",
-            href: "/dashboard/lawyer/settings",
+            href: "/dashboard/lawyers/settings",
+          },
+          {
+            icon: <FiMessageCircle />,
+            label: "AI Chat",
+            href: "/dashboard/ai-chat",
           },
         ];
 
@@ -186,6 +231,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
             label: "Settings",
             href: "/dashboard/client/settings",
           },
+          {
+            icon: <FiMessageCircle />,
+            label: "AI Chat",
+            href: "/dashboard/ai-chat",
+          },
         ];
     }
   };
@@ -197,8 +247,11 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   };
 
   const setRole = (role: User["role"]) => {
-    localStorage.setItem("__userRole", role);
-    window.location.reload();
+    if (user) {
+      const updatedUser = { ...user, role };
+      localStorage.setItem("__user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
+    }
   };
 
   const redirectToDashboard = () => {
@@ -213,7 +266,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
       <div className="flex h-screen items-center justify-center bg-white dark:bg-neutral-950">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-t-green-600 border-gray-200 rounded-full animate-spin mx-auto"></div>
-          <p className="mt-3 text-gray-700 dark:text-gray-300">Loading...</p>
+          <p className="mt-3 text-gray-700 dark:text-gray-300">
+            Loading dashboard...
+          </p>
         </div>
       </div>
     );

@@ -79,8 +79,9 @@ func (cc *ContractsController) HandleCreateContract(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}
 
-	isOwner := cc.lawFirmRepo.IsOwner(userID, req.LawFirmID)
-	if !hasPermission && !isOwner {
+	// isOwner := cc.lawFirmRepo.IsOwner(userID, req.LawFirmID)
+	// if !hasPermission && !isOwner {
+	if !hasPermission {
 		return c.JSON(http.StatusForbidden, constants.ErrNoPermission)
 	}
 
