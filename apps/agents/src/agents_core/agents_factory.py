@@ -3,7 +3,7 @@ from swarm import Swarm, Agent
 from .base import client, chat_model
 from services.azure_openai import azure_client
 
-swarm_client = Swarm(azure_client)
+swarm_client = Swarm(client)
 
 def init_agent(name, instructions, functions, model=chat_model):
     agent = Agent(

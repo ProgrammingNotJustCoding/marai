@@ -1,10 +1,18 @@
+import uuid
 from agents_core import run_client
+from services.azure_storage import save_conversation_to_adls
 from .agents import details_agent, library_agent, chat_agent
 
 user_conversations = {}
 
 def process_legal_query(query, enable_search, user_id="default_user"):
     print("Starting legal chat agent")
+    
+    if user_id not in user_conversations:
+        user_conversations[user_id] = []
+        conversation_id = str(uuid.uuid4())
+    else:
+        conversation_id = user_conversations[user_id][0].get("conversation_id", str(uuid.uuid4()))
 
     query_understanding_response = run_client(
         details_agent,
@@ -22,10 +30,11 @@ def process_legal_query(query, enable_search, user_id="default_user"):
     )
     print("Library Response:", library_response)
 
-    if user_id not in user_conversations:
-        user_conversations[user_id] = []
-
-    user_conversations[user_id].append({"role": "user", "content": query})
+    user_conversations[user_id].append({
+        "role": "user",
+        "content": query,
+        "conversation_id": conversation_id,
+    })
 
     chat_messages = [
         {
@@ -50,10 +59,17 @@ def process_legal_query(query, enable_search, user_id="default_user"):
         chat_agent,
         chat_messages
     )
+    
+    assistant_message = {
+        "role": "assistant", 
+        "content": formatted_response,
+        "conversation_id": conversation_id
+    }
 
-    user_conversations[user_id].append({"role": "assistant", "content": formatted_response})
-
-    if len(user_conversations[user_id]) > 10:
+    user_conversations[user_id].append(assistant_message)
+    
+    if len(user_conversations[user_id]) > 0:
+        save_conversation_to_adls(user_conversations[user_id], user_id)
         user_conversations[user_id] = user_conversations[user_id][-10:]
 
     return formatted_response
