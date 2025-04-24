@@ -7,6 +7,8 @@ import SignInForm from "@/components/auth/SignInForm";
 import SignUpForm from "@/components/auth/SignUpForm";
 import OTPVerification from "@/components/auth/OTPVerification";
 import Toast from "@/components/common/Toast";
+import axios from "axios";
+import { API_URL } from "@/utils/constants";
 
 type AuthMode = "signin" | "signup" | "otp-verification";
 type ToastData = {
@@ -18,40 +20,109 @@ const AuthPage = () => {
   const [authMode, setAuthMode] = useState<AuthMode>("signin");
   const [mobileNumber, setMobileNumber] = useState("");
   const [toast, setToast] = useState<ToastData>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [userData, setUserData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    mobile: "",
+  });
 
-  const handleSignIn = (data: { mobile: string; password: string }) => {
-    setMobileNumber(data.mobile);
-    setToast({
-      type: "success",
-      message: "OTP has been sent to your mobile number",
-    });
-    setAuthMode("otp-verification");
+  const handleSignIn = async (data: { email: string; password: string }) => {
+    setIsLoading(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/auth/user/signin/password`,
+        {
+          email: data.email,
+          password: data.password,
+        },
+      );
+
+      if (response.status === 200) {
+        setToast({
+          type: "success",
+          message: "Signed in successfully! Redirecting to dashboard...",
+        });
+
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 2000);
+      }
+    } catch (error) {
+      console.log("Error:", error);
+      setToast({
+        type: "error",
+        message: "Failed to sign in. Please check your credentials.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleSignUp = (data: {
+  const handleSignUp = async (data: {
     username: string;
     email: string;
     mobile: string;
     password: string;
   }) => {
-    setMobileNumber(data.mobile);
-    setToast({
-      type: "success",
-      message: "Account created! OTP has been sent for verification",
-    });
-    setAuthMode("otp-verification");
+    setIsLoading(true);
+    try {
+      await axios.post(`${API_URL}/auth/user/signup`, {
+        username: data.username,
+        email: data.email,
+        mobile: data.mobile,
+        password: data.password,
+      });
+
+      setUserData(data);
+      setMobileNumber(data.mobile);
+
+      setToast({
+        type: "success",
+        message: "Account created! Please verify your mobile number with OTP",
+      });
+      setAuthMode("otp-verification");
+    } catch (error) {
+      console.log("Error:", error);
+      setToast({
+        type: "error",
+        message: "Failed to create account. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleVerifyOTP = (otp: string) => {
-    console.log("Verifying OTP:", otp);
-    setToast({
-      type: "success",
-      message: "OTP verified successfully! Redirecting to dashboard...",
-    });
+  const handleVerifyOTP = async (otp: string) => {
+    setIsLoading(true);
+    try {
+      await axios.post(
+        `${API_URL}/auth/user/signup/mobile/verify`,
+        {
+          mobile: mobileNumber,
+          otp: otp,
+        },
+        { withCredentials: true },
+      );
 
-    setTimeout(() => {
-      window.location.href = "/dashboard";
-    }, 2000);
+      setToast({
+        type: "success",
+        message: "Phone verified successfully! Please sign in to continue.",
+      });
+
+      setTimeout(() => {
+        setAuthMode("signin");
+      }, 2000);
+    } catch (error) {
+      console.log("Error:", error);
+      setToast({
+        type: "error",
+        message: "Invalid OTP. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleResendOTP = () => {
@@ -71,6 +142,7 @@ const AuthPage = () => {
             key="signin"
             onSwitchToSignUp={() => setAuthMode("signup")}
             onSubmit={handleSignIn}
+            isLoading={isLoading}
           />
         )}
 
@@ -79,6 +151,7 @@ const AuthPage = () => {
             key="signup"
             onSwitchToSignIn={() => setAuthMode("signin")}
             onSubmit={handleSignUp}
+            isLoading={isLoading}
           />
         )}
 
@@ -88,6 +161,7 @@ const AuthPage = () => {
             mobileNumber={mobileNumber}
             onVerify={handleVerifyOTP}
             onResendOTP={handleResendOTP}
+            isLoading={isLoading}
           />
         )}
       </AnimatePresence>

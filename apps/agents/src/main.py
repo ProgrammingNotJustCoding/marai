@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 
 from config import get_logger
 from api.routes import router
@@ -7,6 +8,14 @@ from api.routes import router
 logger = get_logger(__name__)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(router, prefix="/api")
 
@@ -20,7 +29,7 @@ async def custom_404_handler(request: Request, _):
         },
         status_code=404
     )
-    
+
 if __name__ == "__main__":
     import uvicorn
     from config import env

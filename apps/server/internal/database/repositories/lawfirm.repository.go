@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"errors"
+	"fmt"
 	"marai/internal/database/schema"
 	"time"
 
@@ -187,6 +188,28 @@ func (r *LawFirmRepo) GetMemberByEmail(ctx context.Context, email string, lawFir
 	return &member, nil
 }
 
+func (r *LawFirmRepo) GetMemberByName(ctx context.Context, name string, lawfirmName string) (*schema.LawFirmMember, error) {
+	var member schema.LawFirmMember
+	var lawfirm schema.LawFirm
+	err := r.db.WithContext(ctx).Where("name = ? AND is_deleted = ?", lawfirmName, false).First(&lawfirm).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+	err = r.db.WithContext(ctx).Where("member_name = ? AND is_deleted = ?", name, false).First(&member).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+	return &member, nil
+}
+
 func (r *LawFirmRepo) UpdateMember(ctx context.Context, member *schema.LawFirmMember) error {
 	member.UpdatedAt = time.Now()
 	return r.db.WithContext(ctx).Save(member).Error
@@ -243,6 +266,8 @@ func (r *LawFirmRepo) HasPermission(ctx context.Context, userID string, lawFirmI
 			return true, nil
 		}
 	}
+
+	fmt.Printf("Lawyer role: %+v", lawyerRole)
 
 	return false, nil
 }

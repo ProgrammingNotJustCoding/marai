@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"marai/api/constants"
 	"marai/internal/database/repositories"
 	"marai/internal/database/schema"
@@ -331,8 +332,10 @@ func (mc *LawFirmController) HandleAddMember(c echo.Context) error {
 		return c.JSON(http.StatusConflict, constants.ErrConflict)
 	}
 
-	password := ulid.Make().String()
+	password := "password"
+	fmt.Println("password: ", password)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	fmt.Println("hashedPassword: ", hashedPassword)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, constants.ErrInternalServer)
 	}

@@ -1,18 +1,4 @@
 services:
-  marai_backend:
-    build:
-      context: ./apps/server
-      dockerfile: ./Dockerfile
-    ports:
-      - 8080:8080
-    expose:
-      - 8080
-    networks:
-      - marai-network
-    depends_on:
-      marai_postgres:
-        condition: service_healthy
-
   marai_postgres:
     container_name: marai-postgres
     image: postgres:17
