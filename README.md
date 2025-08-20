@@ -1,148 +1,82 @@
-<div align=center>
-<h1>
-Marai
-</h1>
+# Marai
 
-![AWS](https://img.shields.io/badge/AWS-Cloud-darkblue) ![Azure](https://img.shields.io/badge/Azure-Cloud-darkblue) ![React](https://img.shields.io/badge/React-Frontend-green) ![Golang](https://img.shields.io/badge/Golang-Backend-blue) ![OpenAI](https://img.shields.io/badge/OpenAI-Swarm-orange)
-</div>
+<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
-## Overview
-Marai is a cloud-based architecture designed to streamline legal consultations and case file management for clients and law firms. It enables seamless communication between clients and legal consultants, allowing clients to request legal guidance, submit case files for review, and receive AI-powered insights. The system ensures secure storage, efficient case file compression, and retrieval through a distributed and scalable infrastructure leveraging AWS and Azure services.
+✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
 
-> [!CAUTION]
-> We are currently developing the Marai platform.
+[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
 
-## Applications:
-- Workflow Management for law firms.
-- Contract Lifecycle Management for law firms.
-- Integrates AI-driven analysis for legal case management.
-- Marketplace for legal services and resources.
+## Finish your remote caching setup
 
-## Architecture Components
-The system consists of multiple AWS and Azure services interacting to form a robust and efficient workflow:
+[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/mOacPQeEdf)
 
-> [!TIP]
-> We are using a multi-cloud based architecture, with AWS Services on the API server side, and Azure for the agents server.
 
-- **Client (EC2, React) 🖥️**
-  - A front-end application running on AWS EC2, built with React.
-  - Handles user interactions and sends requests to the backend.
+## Run tasks
 
-- **AWS WAF (Web Application Firewall) 🔒**
-  - Provides security against common web threats.
-  - Protects the system from malicious attacks before traffic reaches the load balancer.
+To run the dev server for your app, use:
 
-- **AWS ALB (Application Load Balancer) ⚖️**
-  - Distributes incoming traffic among multiple backend instances.
-  - Ensures high availability and fault tolerance.
+```sh
+npx nx serve client
+```
 
-- **Server (EC2, Echo) 💻**
-  - The main backend application running on AWS EC2, built with Echo (a Golang framework).
-  - Handles requests from the front-end and interacts with various AWS services.
+To create a production bundle:
 
-- **AWS SQS (Simple Queue Service) 📩**
-  - Asynchronous message queuing service.
-  - Ensures smooth processing of tasks by the Swarm Server.
+```sh
+npx nx build client
+```
 
-- **Swarm Server (EC2, FastAPI) ⚡**
-  - A microservice-based backend using FastAPI, running on EC2.
-  - Processes queued tasks and interacts with AI and search services.
+To see all available targets to run for a project, run:
 
-- **AWS S3 (Simple Storage Service) 📂**
-  - Stores files and documents for the system.
-  - Ensures secure and scalable storage of workflow-related data.
+```sh
+npx nx show project client
+```
 
-- **AWS ElastiCache ⚡**
-  - Provides caching for improved application performance.
-  - Works alongside AWS RDS for efficient data retrieval.
+These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
 
-- **AWS RDS (PostgreSQL) 🗄️**
-  - Relational database for structured data storage.
-  - Used for managing workflow-related metadata and case information.
+[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-- **AWS CloudWatch 📊**
-  - Monitors application and infrastructure performance.
-  - Provides logging, metrics, and alerting functionalities.
+## Add new projects
 
-- **Azure OpenAI 🤖**
-  - Provides AI-powered capabilities for legal case analysis and automation.
-  - Supports intelligent document processing and legal insights.
+While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
 
-- **AWS OpenSearch (RAG - Retrieval-Augmented Generation) 🔍**
-  - Enables efficient searching and indexing of legal documents.
-  - Supports AI-powered retrieval and case reference management.
+Use the plugin's generator to create new projects.
 
-## Workflow Process
-- The Client (React on EC2) sends requests via AWS ALB.
-- Requests pass through AWS WAF for security checks.
-- The Server (Echo on EC2) processes the request and interacts with:
-  - AWS S3 for document storage.
-  - AWS RDS for database queries.
-  - AWS ElastiCache for fast data retrieval.
-  - AWS CloudWatch for monitoring and logging.
-- If necessary, tasks are sent to AWS SQS, which triggers the Swarm Server (FastAPI on EC2) for processing.
-- The Swarm Server interacts with AI models on Azure OpenAI and performs document retrieval using AWS OpenSearch (RAG).
-- The system responds to the client with processed data or insights.
+To generate a new application, use:
 
-## Deployment
-1. Provision AWS EC2 instances for the client, backend servers, and swarm server.
-2. Set up AWS ALB and WAF for secure traffic management.
-3. Deploy PostgreSQL on AWS RDS and configure connections.
-4. Enable AWS S3 and OpenSearch for storage and document retrieval.
-5. Configure Azure OpenAI API for AI-driven processing.
-6. Monitor performance using AWS CloudWatch.
+```sh
+npx nx g @nx/react:app demo
+```
 
-## Contract Management and Security
+To generate a new library, use:
 
-Marai ensures secure and efficient contract management through the following measures:
+```sh
+npx nx g @nx/react:lib mylib
+```
 
-### Security Measures
-- **Role-Based Access Control (RBAC):**
-  - Permissions are enforced based on user roles (e.g., owner, admin, member).
-  - Only authorized users can create, update, delete, or view contracts.
+You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
 
-- **Data Encryption:**
-  - Contract files are encrypted using server-side encryption before being stored in the MinIO object storage.
-  - SHA-256 hashing is used to ensure file integrity.
+[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-- **Audit Trails:**
-  - All actions on contracts (e.g., signing, viewing) are logged as signature events.
-  - These logs include metadata such as IP address, user agent, and timestamps.
 
-- **Soft Deletion:**
-  - Contracts are soft-deleted to prevent accidental data loss.
-  - Deleted contracts are marked with a `is_deleted` flag and retain their metadata for auditing purposes.
+[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-- **Status Transitions:**
-  - Contracts follow a strict lifecycle (e.g., draft → pending_signature → signed → void).
-  - Invalid status transitions are rejected to maintain data integrity.
+## Install Nx Console
 
-### Features
-- **File Uploads:**
-  - Users can upload files to draft contracts.
-  - Uploaded files are securely stored and accessible only to authorized users.
+Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
 
-- **Party Management:**
-  - Parties can be added or removed from draft contracts.
-  - Each party has attributes like name, email, mobile, and role.
+[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-- **Digital Signatures:**
-  - Parties can digitally sign contracts.
-  - Once all parties have signed, the contract status is updated to `signed`.
+## Useful links
 
-- **Pagination and Filtering:**
-  - Contracts can be listed with filters (e.g., status, isTemplate) and pagination for efficient retrieval.
+Learn more:
 
-## Future Improvements
-- Implement serverless functions (AWS Lambda) for improved scalability.
-- Enhance AI models for better legal text processing.
-- Expand OpenSearch capabilities for advanced legal search queries.
+- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/react-monorepo-tutorial?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
+- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-## Shout outs 💥
-
-| <p align="center">![Rishi Viswanathan](https://github.com/risv1.png?size=128)<br>[Rishi Viswanathan](https://github.com/risv1)</p> | <p align="center">![Harsh Patel](https://github.com/HarshPatel5940.png?size=128)<br>[Harsh Patel](https://github.com/HarshPatel5940)</p> | <p align="center">![Inigo Jeevan](https://github.com/inigojeevan.png?size=128)<br>[Inigo Jeevan](https://github.com/inigojeevan)</p> | <p align="center">![Dheekshitha](https://github.com/Dheekshitha24.png?size=128)<br>[Dheekshitha](https://github.com/Dheekshitha24)</p>
- ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-
-## License 📜
-
-`marai` is available under the MPL 2.0 license. See the LICENSE file for more info.
+And join the Nx community:
+- [Discord](https://go.nx.dev/community)
+- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
+- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
+- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)

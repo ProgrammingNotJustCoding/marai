@@ -1,16 +1,12 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import nx from '@nx/eslint-plugin';
+import baseConfig from '../../eslint.config.mjs';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+export default [
+  ...baseConfig,
+  ...nx.configs['flat/react'],
+  {
+    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    // Override or add rules here
+    rules: {},
+  },
 ];
-
-export default eslintConfig;

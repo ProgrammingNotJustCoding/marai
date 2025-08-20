@@ -1,9 +1,0 @@
-{
-  "version": "1",
-  "name": "marai-agents",
-  "type": "collection",
-  "ignore": [
-    "node_modules",
-    ".git"
-  ]
-}
