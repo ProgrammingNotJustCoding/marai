@@ -8,13 +8,15 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "go build -o dist/apps/server/main apps/server/main.go"
+        "command": "go build -o ../../dist/apps/server/main main.go",
+        "cwd": "apps/server"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "go run apps/server/main.go"
+        "command": "go run main.go",
+        "cwd": "apps/server"
       }
     }
   },
