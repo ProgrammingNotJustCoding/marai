@@ -1,7 +1,20 @@
 {
   "recommendations": [
-    "nrwl.angular-console",
+    "golang.go",
+    "ms-python.python",
+    "ms-python.black-formatter",
+    "ms-python.pylint",
+    "ms-python.flake8",
+    "bradlc.vscode-tailwindcss",
     "esbenp.prettier-vscode",
-    "dbaeumer.vscode-eslint"
+    "ms-vscode.vscode-typescript-next",
+    "ms-vscode.vscode-json",
+    "redhat.vscode-yaml",
+    "ms-vscode-remote.remote-containers",
+    "ms-azuretools.vscode-docker",
+    "GitHub.copilot",
+    "GitHub.copilot-chat",
+    "ms-vscode.makefile-tools",
+    "rust-lang.rust-analyzer"
   ]
 }

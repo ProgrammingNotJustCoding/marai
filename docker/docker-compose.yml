@@ -1,0 +1,5 @@
+include:
+  - ./compose/postgres/compose.yml
+  - ./compose/nginx/compose.yml
+
+services: {}

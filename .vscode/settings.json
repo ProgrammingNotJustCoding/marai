@@ -1,0 +1,75 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  
+  "go.formatTool": "goimports",
+  "go.lintTool": "golangci-lint",
+  "go.testFlags": ["-v"],
+  "go.coverOnSave": true,
+  "go.coverageDecorator": {
+    "type": "gutter"
+  },
+  
+  "python.defaultInterpreterPath": ".venv/bin/python",
+  "python.testing.pytestEnabled": true,
+  
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "prettier.configPath": ".prettierrc",
+  
+  "files.associations": {
+    "*.env.*": "env",
+    "docker-compose*.yml": "dockercompose",
+    "Dockerfile*": "dockerfile",
+    "*.conf": "nginx"
+  },
+  
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/vendor": true,
+    "**/target": true
+  },
+  
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/__pycache__": true,
+    "**/target": true,
+    "**/dist": true,
+    "**/build": true
+  },
+  
+  "[go]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": false
+  },
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[yaml]": {
+    "editor.tabSize": 2
+  },
+  "[dockerfile]": {
+    "editor.tabSize": 4
+  }
+}
